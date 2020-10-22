@@ -9,14 +9,20 @@ module.exports = env => {
   return {
     mode: env.dev === 'true' ? 'development' : 'production',
     watch: env.dev === 'true',
-    entry: ['src/BeatDetect.js'],
+    entry: ['./src/BeatDetect.js'],
     stats: {
       warnings: env.dev === 'true',
     },
     devtool: false,
     output: {
       path: DIST,
-      filename: `BeatDetect.min.js`
+      filename: `BeatDetect.min.js`,
+      environment: {
+        arrowFunction: false,
+        const: false,
+        forOf: false,
+        module: true
+      }
     },
     module: { // Only transpile code in production mode
       rules: env.dev === 'true' ? [] : [{

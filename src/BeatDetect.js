@@ -11,18 +11,22 @@ class BeatDetect {
 		this._sampleRate = options.sampleRate || 44100;
 		this._log = options.log || false;
 		this._perf = options.perf || false;
+		this._round = options.round || false;
+		this._float = options.float || 8;
+		this._lowPassFreq = options.lowPassFreq || 150;
+		this._highPassFreq = options.highPassFreq || 100;
 	}
 
 
-	getBeatInfo(options) {
-		const perf = { // Performances mark to compute execution duration
+	getBeatInfo(options) { 
+		// Performances mark to compute execution duration
+		options.perf = {
 			m0: performance.now(), // Start beat detection
 			m1: 0, // Fetch track done
 			m2: 0, // Offline context rendered
 			m3: 0 // Bpm processing done
 		};
-
-		options.perf = perf;
+		// In order ; fetch track ,decode its buffer, process it and send back BPM info
 		return new Promise((resolve, reject) => {
 			this._fetchRawTrack(options)
 				.then(this._buildOfflineCtx.bind(this))
@@ -33,7 +37,8 @@ class BeatDetect {
 
 
 	_fetchRawTrack(options) {
-		this._logEvent('log', 'Fetch track');
+		// TODO use fetch api instead, ES rules
+		this._logEvent('log', `Fetch track ${options.name || ''}`);
 		return new Promise((resolve, reject) => {
 	    let request = new XMLHttpRequest();
 	    request.open('GET', options.url, true);
@@ -48,82 +53,65 @@ class BeatDetect {
 
 
 	_buildOfflineCtx(options) {
-		this._logEvent('log', 'Offline rendering');
-		return new Promise((resolve, reject) => {
+		this._logEvent('log', 'Offline rendering of the track');
+		return new Promise((resolve, reject) => {			
+      // Decode track audio with audio context to later feed the offline context with a buffer
 			const audioCtx = new AudioContext();
-      // Create offline context
-      audioCtx.decodeAudioData(options.response, function(buffer) {
-        var offlineCtx = new OfflineContext(2, buffer.duration * this._sampleRate, this._sampleRate);
-				// Create buffer source
-        var source = offlineCtx.createBufferSource();
+      audioCtx.decodeAudioData(options.response, buffer => {
+      	// Define offline context according to the buffer sample rate and duration
+        const offlineCtx = new OfflineContext(2, buffer.duration * this._sampleRate, this._sampleRate);
+				// Create buffer source from loaded track
+        const source = offlineCtx.createBufferSource();
         source.buffer = buffer;
-
-        // Beats, or kicks, generally occur around the 100 to 150 hz range.
-        // Below this is often the bassline.  So let's focus just on that.
-
-        // First a lowpass to remove most of the song.
-
-        var lowpass = offlineCtx.createBiquadFilter();
-        lowpass.type = "lowpass";
-        lowpass.frequency.value = 150;
+        // Lowpass filter to ignore most frequencies except bass (goal is to retrieve kick impulsions)
+        const lowpass = offlineCtx.createBiquadFilter();
+        lowpass.type = 'lowpass';
+        lowpass.frequency.value = this._lowPassFreq;
         lowpass.Q.value = 1;
-
-        // Run the output of the source through the low pass.
-
-        source.connect(lowpass);
-
-        // Now a highpass to remove the bassline.
-
-        var highpass = offlineCtx.createBiquadFilter();
-        highpass.type = "highpass";
-        highpass.frequency.value = 100;
+        // Apply a high pass filter to remove the bassline
+        const highpass = offlineCtx.createBiquadFilter();
+        highpass.type = 'highpass';
+        highpass.frequency.value = this._highPassFreq;
         highpass.Q.value = 1;
-
-        // Run the output of the lowpass through the highpass.
-
+        // Chain offline nodes from source to destination with filters among
+        source.connect(lowpass);
         lowpass.connect(highpass);
-
-        // Run the output of the highpass through our offline context.
-
-        highpass.connect(offlineCtx.destination);
-
-        // Start the source, and render the output into the offline conext.
-
+				highpass.connect(offlineCtx.destination);       
+        // Start the source and rendering
         source.start(0);
         offlineCtx.startRendering();
-
+        // Continnue analysis when buffer has been read
 			  offlineCtx.oncomplete = result => {
 			  	options.perf.m2 = performance.now();
 			    resolve(Object.assign(result, options));
 			  };
-      }.bind(this));
+      });
 		});
 	}
 
 
 	_processRenderedBuffer(options) {
-		this._logEvent('log', 'Collect info');
+		this._logEvent('log', 'Collect beat info');
 		return new Promise(resolve => {
+			// Extract PCM data from offline rendered buffer
 			const dataL = options.renderedBuffer.getChannelData(0);
 			const dataR = options.renderedBuffer.getChannelData(1);
-
+			// Extract most intebnse peaks, and create intervals between them	
 		  const peaks = this._getPeaks([dataL, dataR]);
 		  var groups = this._getIntervals(peaks);
-		  // Sort possible bpms by count to get the most accurate one in first position
+		  // Sort found intervals by count to get the most accurate one in first position
 		  var top = groups.sort((intA, intB) => {
 	      return intB.count - intA.count;
-	    }).splice(0, 5);
+	    }).splice(0, 5); // Only keep the 5 best matches
 
-			console.log(top)
-
+		  // Offset -> get fb using peaks tweaked on 5, 10s and check for first high energy beat
 			
-
-			this._logEvent('log', 'Analysis done');
 			options.perf.m3 = performance.now();
+			this._logEvent('log', 'Analysis done');
 		  resolve(Object.assign({
 		  	bpm: top[0].tempo,
-		  	offset: this._getTimeOffset(peaks[0], dataL.length, top[0].tempo)
-		  }, this._perf ? {
+		  	offset: this._getTimeOffset(peaks[0].position, dataL.length, top[0].tempo)
+		  }, this._perf ? { // Assign perf key to return object if user requested it
 		  	perf: this._getPerfDuration(options.perf)
 		  } : null));
 		});
@@ -159,6 +147,7 @@ class BeatDetect {
 		    }
 		    peaks.push(max);
 		  }
+
 		  // We then sort the peaks according to volume...
 		  peaks.sort((a, b) => {
 		    return b.volume - a.volume;
@@ -187,8 +176,7 @@ class BeatDetect {
 	      const group = {
 	        tempo: (60 * this._sampleRate) / (peaks[index + i].position - peak.position),
 	        count: 1,
-					position: peak.position,
-					peaks: []
+					position: peak.position
 	      };
 
 	      while (group.tempo <= 70) { // TODO options for val
@@ -199,11 +187,14 @@ class BeatDetect {
 	        group.tempo /= 2;
 	      }
 
-	      group.tempo = this._floatRound(group.tempo, 4); // TODO options for val
+	      if (this._round === true) { // Integer rounding
+	      	group.tempo = Math.round(group.tempo);
+	      } else { // Floating rounding
+		      group.tempo = this._floatRound(group.tempo, this._float);
+	      }
 
 				const exists = groups.some(interval => {
 					if (interval.tempo === group.tempo) {
-						interval.peaks.push(peak);
 						++interval.count;
 						return 1;
 					}
@@ -221,11 +212,11 @@ class BeatDetect {
 	}
 
 
-	_getTimeOffset(peak, length, bpm) {
+	_getTimeOffset(position, length, bpm) {
 		// Here we compute beat time offset using the first spotted peak.
 		// Using its sample index and the found bpm
 		const bpmTime = 60 / bpm;
-		const firstBeatTime = peak.position / this._sampleRate;
+		const firstBeatTime = position / this._sampleRate;
 		let offset = firstBeatTime;
 
 		while (offset >= bpmTime) {
@@ -260,6 +251,44 @@ class BeatDetect {
   _floatRound(value, precision) {
     const multiplier = Math.pow(10, precision || 0);
     return Math.round(value * multiplier) / multiplier;
+  }
+
+
+ 	/* setters */
+
+
+  set sampleRate(sampleRate) {
+  	this._sampleRate = sampleRate
+  }
+
+
+  set log(Log) {
+  	this._log = log
+  }
+
+
+  set perf(perf) {
+  	this._perf = perf
+  }
+
+
+  set round(round) {
+  	this._round = round
+  }
+
+
+  set float(float) {
+  	this._float = float
+  }
+
+
+  set lowPassFreq(lowPassFreq) {
+  	this._lowPassFreq = lowPassFreq
+  }
+
+
+  set highPassFreq(highPassFreq) {
+  	this._highPassFreq = highPassFreq
   }
 
 
