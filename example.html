@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>BeatDetect.js</title>
+</head>
+<body>
+	<script type="module">
+		import BeatDetect from './src/BeatDetect.js';
+
+		const bt = new BeatDetect({
+			sampleRate: 44100,
+			log: true,
+			perf: true
+		});
+
+		bt.getBeatInfo({
+			url: './demo/audio/Teminite - Hot Fizz.mp3'
+		}).then(info => {
+			console.log(info)
+		});
+	</script>
+</body>
+</html>

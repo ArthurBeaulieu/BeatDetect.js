@@ -1,0 +1,48 @@
+{
+  "name": "beatdetect",
+  "version": "0.0.1",
+  "description": "TODO",
+  "keywords": [
+    "javascript",
+    "es6-module"
+  ],
+  "main": "src/BeatDetect.js",
+  "scripts": {
+    "build": "webpack --env version=0.0.1 --progress",
+    "dev": "webpack --env version=0.0.1 --env dev=true --progress",
+    "web-server": "http-server -p 1337 -c-1 -o example.html",
+    "doc": "jsdoc -c doc/jsDoc.json",
+    "test": "karma start test/karma.config.js",
+    "testdev": "karma start test/karma.config.js --dev=true",
+    "beforecommit": "npm run test && npm run build && npm run doc"
+  },
+  "homepage": "https://github.com/ArthurBeaulieu/BeatDetect",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ArthurBeaulieu/BeatDetect.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ArthurBeaulieu/BeatDetect/issues"
+  },
+  "author": "Arthur Beaulieu",
+  "license": "GPL-3.0",
+  "devDependencies": {
+    "@babel/core": ">=7.1.2",
+    "@babel/preset-env": ">=7.11.0",
+    "babel-loader": ">=8.0.4",
+    "clean-webpack-plugin": ">=3.0.0",
+    "http-server": ">=0.12.3",
+    "jasmine": ">=3.2.0",
+    "jasmine-core": ">=3.3.0",
+    "jsdoc": ">=3.5.5",
+    "karma": ">=5.1.0",
+    "karma-chrome-launcher": ">=2.2.0",
+    "karma-firefox-launcher": ">=1.1.0",
+    "karma-jasmine": ">=1.1.2",
+    "karma-sourcemap-loader": ">=0.3.7",
+    "karma-webpack": ">=4.0.0",
+    "tui-jsdoc-template": ">=1.2.2",
+    "webpack": ">=4.16.5",
+    "webpack-cli": ">=3.1.0"
+  }
+}
