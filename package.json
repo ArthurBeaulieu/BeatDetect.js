@@ -1,6 +1,6 @@
 {
   "name": "beatdetect.js",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "TODO",
   "keywords": [
     "javascript",
@@ -8,8 +8,8 @@
   ],
   "main": "src/BeatDetect.js",
   "scripts": {
-    "build": "webpack --env version=0.0.1 --progress",
-    "dev": "webpack --env version=0.0.1 --env dev=true --progress",
+    "build": "webpack --env version=0.0.2 --progress",
+    "dev": "webpack --env version=0.0.2 --env dev=true --progress",
     "web-server": "http-server -p 1337 -c-1 -o example.html",
     "doc": "jsdoc -c doc/jsDoc.json",
     "beforecommit": "npm run test && npm run build && npm run doc"

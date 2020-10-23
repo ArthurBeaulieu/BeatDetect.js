@@ -64,6 +64,7 @@ class AnalysisModal {
 
 
   _fillAttributes() {
+    this._dom.title = document.getElementById('modal-title');
     this._dom.tracks = document.getElementById('track-container');
     this._dom.close = document.getElementById('close-button');
 
@@ -72,16 +73,23 @@ class AnalysisModal {
 
 
   _handleFiles() {
+    this._dom.title.innerHTML = 'BeatDetect.js analysis...';
+    let counter = 0;
     for (let i = 0; i < this._data.length; ++i) {
       const track = document.createElement('DIV');
-      track.innerHTML = this._data[i].name;
+      track.innerHTML = `<p><b>${this._data[i].name}</b></p>`;
       this._dom.tracks.appendChild(track);
       // Send track to BeatDetect. Track lifecycle is handled in callback
       const objectURL = window.URL.createObjectURL(this._data[i]);
       this._bt.getBeatInfo({
         url: objectURL
       }).then(info => {
+        ++counter;
+        track.innerHTML += `<p>Result : <b>${info.bpm}</b> BPM<br><i>Offset : <b>${info.offset}</b> s – First Bar : <b>${info.firstBar}</b> s</i><p>`
         console.log(this._data[i].name, info);
+        if (counter === this._data.length) {
+          this._dom.title.innerHTML = 'BeatDetect.js analysis done';
+        }
       }).catch(error => {
         console.error(error);
       });

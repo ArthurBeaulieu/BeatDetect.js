@@ -26,7 +26,10 @@ p { transition: opacity .1s ease-out; }
   border-radius: 6px;
   box-shadow:  0 0 1rem 0 rgba(86, 212, 91, .05);
   box-sizing: border-box;
+  color: white;
   font-size: .9rem;
+  max-height: 66%;
+  overflow: auto;
   padding: 2.5rem;
   width: max-content;
 }
@@ -41,7 +44,11 @@ p { transition: opacity .1s ease-out; }
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  margin: .3rem 0;
+  margin: .8rem 0;
+}
+
+.modal div p {
+  margin: 0;
 }
 
 .modal label {

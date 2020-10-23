@@ -15,10 +15,12 @@ class BeatDetect {
 		this._float = options.float || 8;
 		this._lowPassFreq = options.lowPassFreq || 150;
 		this._highPassFreq = options.highPassFreq || 100;
+		this._bpmRange = options.bpmRange || [90, 180];
+		this._timeSignature = options.timeSignature || 4;
 	}
 
 
-	getBeatInfo(options) { 
+	getBeatInfo(options) {
 		// Performances mark to compute execution duration
 		options.perf = {
 			m0: performance.now(), // Start beat detection
@@ -54,7 +56,7 @@ class BeatDetect {
 
 	_buildOfflineCtx(options) {
 		this._logEvent('log', 'Offline rendering of the track');
-		return new Promise((resolve, reject) => {			
+		return new Promise((resolve, reject) => {
       // Decode track audio with audio context to later feed the offline context with a buffer
 			const audioCtx = new AudioContext();
       audioCtx.decodeAudioData(options.response, buffer => {
@@ -76,7 +78,7 @@ class BeatDetect {
         // Chain offline nodes from source to destination with filters among
         source.connect(lowpass);
         lowpass.connect(highpass);
-				highpass.connect(offlineCtx.destination);       
+				highpass.connect(offlineCtx.destination);
         // Start the source and rendering
         source.start(0);
         offlineCtx.startRendering();
@@ -96,21 +98,21 @@ class BeatDetect {
 			// Extract PCM data from offline rendered buffer
 			const dataL = options.renderedBuffer.getChannelData(0);
 			const dataR = options.renderedBuffer.getChannelData(1);
-			// Extract most intebnse peaks, and create intervals between them	
+			// Extract most intebnse peaks, and create intervals between them
 		  const peaks = this._getPeaks([dataL, dataR]);
-		  var groups = this._getIntervals(peaks);
+		  const groups = this._getIntervals(peaks);
 		  // Sort found intervals by count to get the most accurate one in first position
 		  var top = groups.sort((intA, intB) => {
 	      return intB.count - intA.count;
 	    }).splice(0, 5); // Only keep the 5 best matches
 
-		  // Offset -> get fb using peaks tweaked on 5, 10s and check for first high energy beat
-			
+			const offsets = this._getOffsets(dataL, dataL.length, top[0].tempo);
 			options.perf.m3 = performance.now();
 			this._logEvent('log', 'Analysis done');
 		  resolve(Object.assign({
 		  	bpm: top[0].tempo,
-		  	offset: this._getTimeOffset(peaks[0].position, dataL.length, top[0].tempo)
+		  	offset: this._floatRound(offsets.offset, this._float),
+		  	firstBar: this._floatRound(offsets.firstBar, this._float)
 		  }, this._perf ? { // Assign perf key to return object if user requested it
 		  	perf: this._getPerfDuration(options.perf)
 		  } : null));
@@ -123,22 +125,20 @@ class BeatDetect {
 
 	_getPeaks(data) {
 		  // What we're going to do here, is to divide up our audio into parts.
-		  // We will then identify, for each part, what the loudest sample is in that
-		  // part.
-		  // It's implied that that sample would represent the most likely 'beat'
-		  // within that part.
-		  // Each part is 0.5 seconds long - or 22,050 samples.
-		  // This will allow us to ignore breaks, and allow us to address tracks with
-		  // a BPM below 120.
-		  var partSize = this._sampleRate / 2,
-		      parts = data[0].length / partSize,
-		      peaks = [];
-
+		  // We will then identify, for each part, what the loudest sample is in that part.
+		  // It's implied that that sample would represent the most likely 'beat' within that part.
+		  // Each part is .5 seconds long - or 22,050 samples.
+		  const partSize = this._sampleRate / 2;
+		  const parts = data[0].length / partSize;
+		  let peaks = [];
+			// Iterate over .5s parts we created
 		  for (let i = 0; i < parts; ++i) {
 		    let max = 0;
+				// Iterate each byte in the studied part
 		    for (let j = i * partSize; j < (i + 1) * partSize; ++j) {
 		      const volume = Math.max(Math.abs(data[0][j]), Math.abs(data[1][j]));
 		      if (!max || (volume > max.volume)) {
+						// Save peak at its most intense position
 		        max = {
 		          position: j,
 		          volume: volume
@@ -147,18 +147,17 @@ class BeatDetect {
 		    }
 		    peaks.push(max);
 		  }
-
-		  // We then sort the peaks according to volume...
+		  // Sort peaks per volume
 		  peaks.sort((a, b) => {
 		    return b.volume - a.volume;
 		  });
-		  // ...take the loundest half of those...
+		  // This way we can ignore the less loud half
 		  peaks = peaks.splice(0, peaks.length * 0.5);
-		  // ...and re-sort it back based on position.
+		  // Then sort again by position to retrieve the playback order
 		  peaks.sort((a, b) => {
 		    return a.position - b.position;
 		  });
-
+			// Send back peaks
 		  return peaks;
 	}
 
@@ -176,14 +175,15 @@ class BeatDetect {
 	      const group = {
 	        tempo: (60 * this._sampleRate) / (peaks[index + i].position - peak.position),
 	        count: 1,
-					position: peak.position
+					position: peak.position,
+					peaks: []
 	      };
 
-	      while (group.tempo <= 70) { // TODO options for val
+	      while (group.tempo <= this._bpmRange[0]) {
 	        group.tempo *= 2;
 	      }
 
-	      while (group.tempo > 220) { // TODO options for val
+	      while (group.tempo > this._bpmRange[1]) {
 	        group.tempo /= 2;
 	      }
 
@@ -195,6 +195,7 @@ class BeatDetect {
 
 				const exists = groups.some(interval => {
 					if (interval.tempo === group.tempo) {
+						interval.peaks.push(peak);
 						++interval.count;
 						return 1;
 					}
@@ -212,7 +213,66 @@ class BeatDetect {
 	}
 
 
-	_getTimeOffset(position, length, bpm) {
+	_getOffsets(data, length, bpm) {
+		// Now we have bpm, we re-calculate peaks for the 30 first seconds.
+		// Since a peak is at the maximum waveform height, we need to offset it a little on its left.
+		// This offset is empiric, and based on a fraction of the BPM duration in time.
+		// We assume the left offset from the highest volule value is 5% of the bpm time frame
+		var partSize = this._sampleRate / 2;
+		var parts = data.length / partSize;
+		var peaks = [];
+		// Create peak with little offset on the left to get the very start of the peak
+		for (let i = 0; i < parts; ++i) {
+			let max = 0;
+			for (let j = i * partSize; j < (i + 1) * partSize; ++j) {
+				const volume = data[j];
+				if (!max || (volume > max.volume)) {
+					max = {
+						position: j - Math.round(((60 / bpm) * 0.05) * this._sampleRate), // Arbitrary offset on the left of the peak about 5% bpm time
+						volume: volume
+					};
+				}
+			}
+			peaks.push(max);
+		}
+		// Saved peaks ordered by position before any sort manipuplation
+		const unsortedPeaks = [...peaks]; // Clone array before sorting for first beat matching
+		// Sort peak per decreasing volumes
+		peaks.sort((a, b) => {
+			return b.volume - a.volume;
+		});
+		// First peak is the loudest, we assume it is a strong time of the 4/4 time signature
+		const refOffset = this._getLowestTimeOffset(peaks[0].position, length, bpm);
+		let mean = 0;
+		let divider = 0;
+		// Find shortest offset
+		for (let i = 0; i < peaks.length; ++i) {
+			const offset = this._getLowestTimeOffset(peaks[i].position, length, bpm);
+			if (offset - refOffset < 0.05 || refOffset - offset > -0.05) { // Only keep first times to compute mean
+				mean += offset;
+				++divider;
+			}
+		}
+		// Find first beat offset
+		let i = 0; // Try finding the first peak index that is louder than provided threshold (0.02)
+		while (unsortedPeaks[i].volume < 0.02) { // Threshold is also arbitrary...
+			++i;
+		}
+		// Convert position into time
+		let firstBar = (unsortedPeaks[i].position / this._sampleRate);
+		// If matching first bar is before any possible time ellapsed, we set it at computed offset
+		if (firstBar > (mean / divider) && firstBar < (60 / bpm)) {
+			firstBar = (mean / divider)
+		}
+		// Return both offset and first bar offset
+		return {
+			offset: (mean / divider),
+			firstBar: firstBar
+		};
+	}
+
+
+	_getLowestTimeOffset(position, length, bpm) {
 		// Here we compute beat time offset using the first spotted peak.
 		// Using its sample index and the found bpm
 		const bpmTime = 60 / bpm;
@@ -220,7 +280,13 @@ class BeatDetect {
 		let offset = firstBeatTime;
 
 		while (offset >= bpmTime) {
-			offset -= bpmTime;
+			offset -= (bpmTime * this._timeSignature);
+		}
+
+		if (offset < 0) {
+			while (offset < 0) {
+				offset += bpmTime;
+			}
 		}
 
 		return offset;
