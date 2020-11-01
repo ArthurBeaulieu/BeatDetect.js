@@ -31,9 +31,9 @@ class BeatDetect {
 		// In order ; fetch track ,decode its buffer, process it and send back BPM info
 		return new Promise((resolve, reject) => {
 			this._fetchRawTrack(options)
-				.then(this._buildOfflineCtx.bind(this))
-				.then(this._processRenderedBuffer.bind(this))
-				.then(resolve).catch(reject);
+			.then(this._buildOfflineCtx.bind(this))
+			.then(this._processRenderedBuffer.bind(this))
+			.then(resolve).catch(reject);
 		});
 	}
 
@@ -42,14 +42,14 @@ class BeatDetect {
 		// TODO use fetch api instead, ES rules
 		this._logEvent('log', `Fetch track ${options.name || ''}`);
 		return new Promise((resolve, reject) => {
-	    let request = new XMLHttpRequest();
-	    request.open('GET', options.url, true);
-	    request.responseType = 'arraybuffer';
-	    request.onload = () => {
-	    	options.perf.m1 = performance.now();
-	    	resolve(Object.assign(request, options));
-	    };
-	    request.send();
+			let request = new XMLHttpRequest();
+			request.open('GET', options.url, true);
+			request.responseType = 'arraybuffer';
+			request.onload = () => {
+				options.perf.m1 = performance.now();
+				resolve(Object.assign(request, options));
+			};
+			request.send();
 		});
 	}
 
@@ -57,37 +57,37 @@ class BeatDetect {
 	_buildOfflineCtx(options) {
 		this._logEvent('log', 'Offline rendering of the track');
 		return new Promise((resolve, reject) => {
-      // Decode track audio with audio context to later feed the offline context with a buffer
+			// Decode track audio with audio context to later feed the offline context with a buffer
 			const audioCtx = new AudioContext();
-      audioCtx.decodeAudioData(options.response, buffer => {
-      	// Define offline context according to the buffer sample rate and duration
-        const offlineCtx = new OfflineContext(2, buffer.duration * this._sampleRate, this._sampleRate);
+			audioCtx.decodeAudioData(options.response, buffer => {
+				// Define offline context according to the buffer sample rate and duration
+				const offlineCtx = new OfflineContext(2, buffer.duration * this._sampleRate, this._sampleRate);
 				// Create buffer source from loaded track
-        const source = offlineCtx.createBufferSource();
-        source.buffer = buffer;
-        // Lowpass filter to ignore most frequencies except bass (goal is to retrieve kick impulsions)
-        const lowpass = offlineCtx.createBiquadFilter();
-        lowpass.type = 'lowpass';
-        lowpass.frequency.value = this._lowPassFreq;
-        lowpass.Q.value = 1;
-        // Apply a high pass filter to remove the bassline
-        const highpass = offlineCtx.createBiquadFilter();
-        highpass.type = 'highpass';
-        highpass.frequency.value = this._highPassFreq;
-        highpass.Q.value = 1;
-        // Chain offline nodes from source to destination with filters among
-        source.connect(lowpass);
-        lowpass.connect(highpass);
+				const source = offlineCtx.createBufferSource();
+				source.buffer = buffer;
+				// Lowpass filter to ignore most frequencies except bass (goal is to retrieve kick impulsions)
+				const lowpass = offlineCtx.createBiquadFilter();
+				lowpass.type = 'lowpass';
+				lowpass.frequency.value = this._lowPassFreq;
+				lowpass.Q.value = 1;
+				// Apply a high pass filter to remove the bassline
+				const highpass = offlineCtx.createBiquadFilter();
+				highpass.type = 'highpass';
+				highpass.frequency.value = this._highPassFreq;
+				highpass.Q.value = 1;
+				// Chain offline nodes from source to destination with filters among
+				source.connect(lowpass);
+				lowpass.connect(highpass);
 				highpass.connect(offlineCtx.destination);
-        // Start the source and rendering
-        source.start(0);
-        offlineCtx.startRendering();
-        // Continnue analysis when buffer has been read
-			  offlineCtx.oncomplete = result => {
-			  	options.perf.m2 = performance.now();
-			    resolve(Object.assign(result, options));
-			  };
-      });
+				// Start the source and rendering
+				source.start(0);
+				offlineCtx.startRendering();
+				// Continnue analysis when buffer has been read
+				offlineCtx.oncomplete = result => {
+					options.perf.m2 = performance.now();
+					resolve(Object.assign(result, options));
+				};
+			});
 		});
 	}
 
@@ -99,23 +99,23 @@ class BeatDetect {
 			const dataL = options.renderedBuffer.getChannelData(0);
 			const dataR = options.renderedBuffer.getChannelData(1);
 			// Extract most intebnse peaks, and create intervals between them
-		  const peaks = this._getPeaks([dataL, dataR]);
-		  const groups = this._getIntervals(peaks);
-		  // Sort found intervals by count to get the most accurate one in first position
-		  var top = groups.sort((intA, intB) => {
-	      return intB.count - intA.count;
-	    }).splice(0, 5); // Only keep the 5 best matches
+			const peaks = this._getPeaks([dataL, dataR]);
+			const groups = this._getIntervals(peaks);
+			// Sort found intervals by count to get the most accurate one in first position
+			var top = groups.sort((intA, intB) => {
+				return intB.count - intA.count;
+			}).splice(0, 5); // Only keep the 5 best matches
 
 			const offsets = this._getOffsets(dataL, dataL.length, top[0].tempo);
 			options.perf.m3 = performance.now();
 			this._logEvent('log', 'Analysis done');
-		  resolve(Object.assign({
-		  	bpm: top[0].tempo,
-		  	offset: this._floatRound(offsets.offset, this._float),
-		  	firstBar: this._floatRound(offsets.firstBar, this._float)
-		  }, this._perf ? { // Assign perf key to return object if user requested it
-		  	perf: this._getPerfDuration(options.perf)
-		  } : null));
+			resolve(Object.assign({
+				bpm: top[0].tempo,
+				offset: this._floatRound(offsets.offset, this._float),
+				firstBar: this._floatRound(offsets.firstBar, this._float)
+			}, this._perf ? { // Assign perf key to return object if user requested it
+				perf: this._getPerfDuration(options.perf)
+			} : null));
 		});
 	}
 
@@ -124,74 +124,74 @@ class BeatDetect {
 
 
 	_getPeaks(data) {
-		  // What we're going to do here, is to divide up our audio into parts.
-		  // We will then identify, for each part, what the loudest sample is in that part.
-		  // It's implied that that sample would represent the most likely 'beat' within that part.
-		  // Each part is .5 seconds long - or 22,050 samples.
-		  const partSize = this._sampleRate / 2;
-		  const parts = data[0].length / partSize;
-		  let peaks = [];
-			// Iterate over .5s parts we created
-		  for (let i = 0; i < parts; ++i) {
-		    let max = 0;
-				// Iterate each byte in the studied part
-		    for (let j = i * partSize; j < (i + 1) * partSize; ++j) {
-		      const volume = Math.max(Math.abs(data[0][j]), Math.abs(data[1][j]));
-		      if (!max || (volume > max.volume)) {
-						// Save peak at its most intense position
-		        max = {
-		          position: j,
-		          volume: volume
-		        };
-		      }
-		    }
-		    peaks.push(max);
-		  }
-		  // Sort peaks per volume
-		  peaks.sort((a, b) => {
-		    return b.volume - a.volume;
-		  });
-		  // This way we can ignore the less loud half
-		  peaks = peaks.splice(0, peaks.length * 0.5);
-		  // Then sort again by position to retrieve the playback order
-		  peaks.sort((a, b) => {
-		    return a.position - b.position;
-		  });
-			// Send back peaks
-		  return peaks;
+		// What we're going to do here, is to divide up our audio into parts.
+		// We will then identify, for each part, what the loudest sample is in that part.
+		// It's implied that that sample would represent the most likely 'beat' within that part.
+		// Each part is .5 seconds long - or 22,050 samples.
+		const partSize = this._sampleRate / 2;
+		const parts = data[0].length / partSize;
+		let peaks = [];
+		// Iterate over .5s parts we created
+		for (let i = 0; i < parts; ++i) {
+			let max = 0;
+			// Iterate each byte in the studied part
+			for (let j = i * partSize; j < (i + 1) * partSize; ++j) {
+				const volume = Math.max(Math.abs(data[0][j]), Math.abs(data[1][j]));
+				if (!max || (volume > max.volume)) {
+					// Save peak at its most intense position
+					max = {
+						position: j,
+						volume: volume
+					};
+				}
+			}
+			peaks.push(max);
+		}
+		// Sort peaks per volume
+		peaks.sort((a, b) => {
+			return b.volume - a.volume;
+		});
+		// This way we can ignore the less loud half
+		peaks = peaks.splice(0, peaks.length * 0.5);
+		// Then sort again by position to retrieve the playback order
+		peaks.sort((a, b) => {
+			return a.position - b.position;
+		});
+		// Send back peaks
+		return peaks;
 	}
 
 
 	_getIntervals(peaks) {
-	  // What we now do is get all of our peaks, and then measure the distance to
-	  // other peaks, to create intervals.  Then based on the distance between
-	  // those peaks (the distance of the intervals) we can calculate the BPM of
-	  // that particular interval.
-	  // The interval that is seen the most should have the BPM that corresponds
-	  // to the track itself.
-	  const groups = [];
-	  peaks.forEach((peak, index) => {
-	    for (let i = 1; (index + i) < peaks.length && i < 10; ++i) {
-	      const group = {
-	        tempo: (60 * this._sampleRate) / (peaks[index + i].position - peak.position),
-	        count: 1,
+		// What we now do is get all of our peaks, and then measure the distance to
+		// other peaks, to create intervals.  Then based on the distance between
+		// those peaks (the distance of the intervals) we can calculate the BPM of
+		// that particular interval.
+		// The interval that is seen the most should have the BPM that corresponds
+		// to the track itself.
+		const groups = [];
+		peaks.forEach((peak, index) => {
+			for (let i = 1; (index + i) < peaks.length && i < 10; ++i) {
+				const group = {
+					tempo: (60 * this._sampleRate) / (peaks[index + i].position - peak.position),
+					count: 1,
 					position: peak.position,
 					peaks: []
-	      };
+				};
 
-	      while (group.tempo <= this._bpmRange[0]) {
-	        group.tempo *= 2;
-	      }
+				while (group.tempo <= this._bpmRange[0]) {
+					group.tempo *= 2;
+				}
 
-	      while (group.tempo > this._bpmRange[1]) {
-	        group.tempo /= 2;
-	      }
+				while (group.tempo > this._bpmRange[1]) {
+					group.tempo /= 2;
+				}
 
-	      if (this._round === true) { // Integer rounding
-	      	group.tempo = Math.round(group.tempo);
-	      } else { // Floating rounding
-		      group.tempo = this._floatRound(group.tempo, this._float);
-	      }
+				if (this._round === true) { // Integer rounding
+					group.tempo = Math.round(group.tempo);
+				} else { // Floating rounding
+					group.tempo = this._floatRound(group.tempo, this._float);
+				}
 
 				const exists = groups.some(interval => {
 					if (interval.tempo === group.tempo) {
@@ -201,15 +201,15 @@ class BeatDetect {
 					}
 
 					return 0;
-	      });
+				});
 
-	      if (!exists) {
-	        groups.push(group);
-	      }
-	    }
-	  });
+				if (!exists) {
+					groups.push(group);
+				}
+			}
+		});
 
-	  return groups;
+		return groups;
 	}
 
 
@@ -314,48 +314,48 @@ class BeatDetect {
 	}
 
 
-  _floatRound(value, precision) {
-    const multiplier = Math.pow(10, precision || 0);
-    return Math.round(value * multiplier) / multiplier;
-  }
+	_floatRound(value, precision) {
+		const multiplier = Math.pow(10, precision || 0);
+		return Math.round(value * multiplier) / multiplier;
+	}
 
 
- 	/* setters */
+	/* setters */
 
 
-  set sampleRate(sampleRate) {
-  	this._sampleRate = sampleRate
-  }
+	set sampleRate(sampleRate) {
+		this._sampleRate = sampleRate
+	}
 
 
-  set log(Log) {
-  	this._log = log
-  }
+	set log(Log) {
+		this._log = log
+	}
 
 
-  set perf(perf) {
-  	this._perf = perf
-  }
+	set perf(perf) {
+		this._perf = perf
+	}
 
 
-  set round(round) {
-  	this._round = round
-  }
+	set round(round) {
+		this._round = round
+	}
 
 
-  set float(float) {
-  	this._float = float
-  }
+	set float(float) {
+		this._float = float
+	}
 
 
-  set lowPassFreq(lowPassFreq) {
-  	this._lowPassFreq = lowPassFreq
-  }
+	set lowPassFreq(lowPassFreq) {
+		this._lowPassFreq = lowPassFreq
+	}
 
 
-  set highPassFreq(highPassFreq) {
-  	this._highPassFreq = highPassFreq
-  }
+	set highPassFreq(highPassFreq) {
+		this._highPassFreq = highPassFreq
+	}
 
 
 }
