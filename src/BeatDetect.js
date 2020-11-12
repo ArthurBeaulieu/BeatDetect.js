@@ -1,6 +1,3 @@
-'use strict';
-
-
 class BeatDetect {
 
 
@@ -49,6 +46,7 @@ class BeatDetect {
 				options.perf.m1 = performance.now();
 				resolve(Object.assign(request, options));
 			};
+			request.onerror = reject;
 			request.send();
 		});
 	}
@@ -61,7 +59,7 @@ class BeatDetect {
 			const audioCtx = new AudioContext();
 			audioCtx.decodeAudioData(options.response, buffer => {
 				// Define offline context according to the buffer sample rate and duration
-				const offlineCtx = new OfflineContext(2, buffer.duration * this._sampleRate, this._sampleRate);
+				const offlineCtx = new window.OfflineContext(2, buffer.duration * this._sampleRate, this._sampleRate);
 				// Create buffer source from loaded track
 				const source = offlineCtx.createBufferSource();
 				source.buffer = buffer;
@@ -87,6 +85,7 @@ class BeatDetect {
 					options.perf.m2 = performance.now();
 					resolve(Object.assign(result, options));
 				};
+				offlineCtx.onerror = reject;
 			});
 		});
 	}
@@ -98,14 +97,14 @@ class BeatDetect {
 			// Extract PCM data from offline rendered buffer
 			const dataL = options.renderedBuffer.getChannelData(0);
 			const dataR = options.renderedBuffer.getChannelData(1);
-			// Extract most intebnse peaks, and create intervals between them
+			// Extract most intense peaks, and create intervals between them
 			const peaks = this._getPeaks([dataL, dataR]);
 			const groups = this._getIntervals(peaks);
 			// Sort found intervals by count to get the most accurate one in first position
 			var top = groups.sort((intA, intB) => {
 				return intB.count - intA.count;
 			}).splice(0, 5); // Only keep the 5 best matches
-
+			// Build offset and first bar
 			const offsets = this._getOffsets(dataL, dataL.length, top[0].tempo);
 			options.perf.m3 = performance.now();
 			this._logEvent('log', 'Analysis done');
@@ -127,7 +126,7 @@ class BeatDetect {
 		// What we're going to do here, is to divide up our audio into parts.
 		// We will then identify, for each part, what the loudest sample is in that part.
 		// It's implied that that sample would represent the most likely 'beat' within that part.
-		// Each part is .5 seconds long - or 22,050 samples.
+		// Each part 22,050 samples, half fft.
 		const partSize = this._sampleRate / 2;
 		const parts = data[0].length / partSize;
 		let peaks = [];
@@ -170,6 +169,7 @@ class BeatDetect {
 		// The interval that is seen the most should have the BPM that corresponds
 		// to the track itself.
 		const groups = [];
+		// Comparing each peak with the next one to compute an interval group
 		peaks.forEach((peak, index) => {
 			for (let i = 1; (index + i) < peaks.length && i < 10; ++i) {
 				const group = {
@@ -178,31 +178,32 @@ class BeatDetect {
 					position: peak.position,
 					peaks: []
 				};
-
+				// Trim to fit tempo range to lower bound
 				while (group.tempo <= this._bpmRange[0]) {
 					group.tempo *= 2;
 				}
-
+				// Trim to fit tempo range to upper bound
 				while (group.tempo > this._bpmRange[1]) {
 					group.tempo /= 2;
 				}
-
+				// Integer or floating rounding of tempo value
 				if (this._round === true) { // Integer rounding
 					group.tempo = Math.round(group.tempo);
 				} else { // Floating rounding
 					group.tempo = this._floatRound(group.tempo, this._float);
 				}
-
+				// Test if exists and if so, increment the interval count number
 				const exists = groups.some(interval => {
 					if (interval.tempo === group.tempo) {
 						interval.peaks.push(peak);
 						++interval.count;
-						return 1;
+						// Notify that group already exists
+						return true;
 					}
-
-					return 0;
+					// Return false if no match
+					return false;
 				});
-
+				// Insert only if not existing
 				if (!exists) {
 					groups.push(group);
 				}
@@ -215,9 +216,14 @@ class BeatDetect {
 
 	_getOffsets(data, length, bpm) {
 		// Now we have bpm, we re-calculate peaks for the 30 first seconds.
-		// Since a peak is at the maximum waveform height, we need to offset it a little on its left.
+		// Since a peak is at the maximum waveform height, we need to offset its time a little on its left.
 		// This offset is empiric, and based on a fraction of the BPM duration in time.
 		// We assume the left offset from the highest volule value is 5% of the bpm time frame
+		// Once peak are found and sorted, we get offset by taking the most intense peak (which is
+		// a strong time of the time signature), and use its position to find the smallest time from
+		// the track start that is relative to the time signature and the strong time found.
+		// The first bar is the actual first beat that overcome a 20% threshold, it will mostly be
+		// equal to the BPM offset.
 		var partSize = this._sampleRate / 2;
 		var parts = data.length / partSize;
 		var peaks = [];
@@ -274,6 +280,8 @@ class BeatDetect {
 
 	_getLowestTimeOffset(position, length, bpm) {
 		// Here we compute beat time offset using the first spotted peak.
+		// The lowest means we rewind following the time signature, to find the smallest time
+		// which is between 0s and the full mesure time (timesignature * tempo)
 		// Using its sample index and the found bpm
 		const bpmTime = 60 / bpm;
 		const firstBeatTime = position / this._sampleRate;
@@ -324,37 +332,37 @@ class BeatDetect {
 
 
 	set sampleRate(sampleRate) {
-		this._sampleRate = sampleRate
+		this._sampleRate = sampleRate;
 	}
 
 
-	set log(Log) {
-		this._log = log
+	set log(log) {
+		this._log = log;
 	}
 
 
 	set perf(perf) {
-		this._perf = perf
+		this._perf = perf;
 	}
 
 
 	set round(round) {
-		this._round = round
+		this._round = round;
 	}
 
 
 	set float(float) {
-		this._float = float
+		this._float = float;
 	}
 
 
 	set lowPassFreq(lowPassFreq) {
-		this._lowPassFreq = lowPassFreq
+		this._lowPassFreq = lowPassFreq;
 	}
 
 
 	set highPassFreq(highPassFreq) {
-		this._highPassFreq = highPassFreq
+		this._highPassFreq = highPassFreq;
 	}
 
 
