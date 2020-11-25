@@ -1,6 +1,6 @@
 # BeatDetect.js
 
-![](https://badgen.net/badge/version/0.1.0/blue)
+![](https://badgen.net/badge/version/0.1.1/blue)
 [![License](https://img.shields.io/github/license/ArthurBeaulieu/BeatDetect.js.svg)](https://github.com/ArthurBeaulieu/BeatDetect.js/blob/master/LICENSE.md)
 ![](https://badgen.net/badge/documentation/written/green)
 ![](https://badgen.net/badge/test/todo/red)

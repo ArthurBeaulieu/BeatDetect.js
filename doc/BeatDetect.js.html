@@ -1,14 +1,64 @@
-class BeatDetect {
 
 
-	/** @summary <h1>Beat detection library</h1>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Source: BeatDetect.js | BeatDetect.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/bootstrap.min.css">
+    <link type="text/css" rel="stylesheet" href="styles/prettify-jsdoc.css">
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/tui-doc.css">
+
+    
+</head>
+<body>
+<nav class="lnb" id="lnb">
+    <div class="logo" style="">
+        
+            <img src="img/toast-ui.png" width="100%" height="100%">
+        
+    </div>
+    <div class="title">
+        <h1><a href="index.html" class="link">BeatDetect.js</a></h1>
+        
+            <span class="version">v0.1.1</span>
+        
+    </div>
+    <div class="search-container" id="search-container">
+        <input type="text" placeholder="Search">
+        <ul></ul>
+    </div>
+    
+    <div class="lnb-api hidden"><h3>Classes</h3><ul><li><a href="BeatDetect.html">BeatDetect</a><button type="button" class="hidden toggle-subnav btn btn-link">  <span class="glyphicon glyphicon-plus"></span></button><div class="hidden" id="BeatDetect_sub"><div class="member-type">Members</div><ul class="inner"><li><a href="BeatDetect.html#_bpmRange">_bpmRange</a></li><li><a href="BeatDetect.html#_float">_float</a></li><li><a href="BeatDetect.html#_highPassFreq">_highPassFreq</a></li><li><a href="BeatDetect.html#_log">_log</a></li><li><a href="BeatDetect.html#_lowPassFreq">_lowPassFreq</a></li><li><a href="BeatDetect.html#_perf">_perf</a></li><li><a href="BeatDetect.html#_round">_round</a></li><li><a href="BeatDetect.html#_sampleRate">_sampleRate</a></li><li><a href="BeatDetect.html#_timeSignature">_timeSignature</a></li><li><a href="BeatDetect.html#float">float</a></li><li><a href="BeatDetect.html#highPassFreq">highPassFreq</a></li><li><a href="BeatDetect.html#log">log</a></li><li><a href="BeatDetect.html#lowPassFreq">lowPassFreq</a></li><li><a href="BeatDetect.html#perf">perf</a></li><li><a href="BeatDetect.html#round">round</a></li><li><a href="BeatDetect.html#sampleRate">sampleRate</a></li><li><a href="BeatDetect.html#VERSION">VERSION</a></li></ul><div class="member-type">Methods</div><ul class="inner"><li><a href="BeatDetect.html#._buildOfflineCtx">_buildOfflineCtx</a></li><li><a href="BeatDetect.html#._fetchRawTrack">_fetchRawTrack</a></li><li><a href="BeatDetect.html#._floatRound">_floatRound</a></li><li><a href="BeatDetect.html#._logEvent">_logEvent</a></li><li><a href="BeatDetect.html#._processRenderedBuffer">_processRenderedBuffer</a></li><li><a href="BeatDetect.html#.getBeatInfo">getBeatInfo</a></li></ul></div></li></ul></div>
+</nav>
+<div id="resizer"></div>
+
+<div class="main" id="main">
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>class BeatDetect {
+
+
+	/** @summary &lt;h1>Beat detection library&lt;/h1>
    * @author Arthur Beaulieu
    * @since November 2020
-   * @description <blockquote>This library provides an audio analyser to retrieve a track beat per minute value. It is
+   * @description &lt;blockquote>This library provides an audio analyser to retrieve a track beat per minute value. It is
 	 * also made to guess the time offset before the first significant sound (relative to the BPM), and the time offset of
 	 * the estimated first bar. All its parameters can be updated when constructed, so it can adapt to any type of audio
 	 * input. The analysis method is based on the work of Joe Sullivan and José M. Pérez, and is describe in the
-	 * <code>README.md</code> file of its repository. Remarks and pull requests are welcome!</blockquote>
+	 * &lt;code>README.md&lt;/code> file of its repository. Remarks and pull requests are welcome!&lt;/blockquote>
    * @param {object} [options] - The configuration object of this library
    * @param {boolean} [options.log=false] - Log debug information during the analysis process
    * @param {boolean} [options.perf=false] - Log ellapsed time of each analysis step
@@ -70,8 +120,8 @@ class BeatDetect {
    * @name getBeatInfo
    * @public
    * @memberof BeatDetect
-   * @description <blockquote>Perform a beat detection on a given track and return the analysis result trhough the
-	 * Promise resolution. Any exception will be thrown in the Promise catch method.</blockquote>
+   * @description &lt;blockquote>Perform a beat detection on a given track and return the analysis result trhough the
+	 * Promise resolution. Any exception will be thrown in the Promise catch method.&lt;/blockquote>
    * @param {object} options - The beat detection option
    * @param {string} options.url - The url to the audio file to analyse
    * @param {string} [options.name] - The track name, only useful for logging
@@ -103,8 +153,8 @@ class BeatDetect {
    * @name _fetchRawTrack
    * @private
    * @memberof BeatDetect
-   * @description <blockquote>This method will perform a fetch on the given URL to retrieve the track to analyse.</blockquote>
-   * @param {object} options - The option object sent to the <code>getBeatInfo</code> method, augmented with performance marks
+   * @description &lt;blockquote>This method will perform a fetch on the given URL to retrieve the track to analyse.&lt;/blockquote>
+   * @param {object} options - The option object sent to the &lt;code>getBeatInfo&lt;/code> method, augmented with performance marks
 	 * @returns {promise} A Promise that is resolved when analysis is done, of will be rejected otherwise **/
 	_fetchRawTrack(options) {
 		// TODO use fetch api instead, ES rules
@@ -127,8 +177,8 @@ class BeatDetect {
    * @name _buildOfflineCtx
    * @private
    * @memberof BeatDetect
-   * @description <blockquote>This method will build and connect all required nodes to perform the BPM analysis.</blockquote>
-   * @param {object} options - The option object sent to the <code>_fetchRawTrack</code> method, augmented with track array buffer
+   * @description &lt;blockquote>This method will build and connect all required nodes to perform the BPM analysis.&lt;/blockquote>
+   * @param {object} options - The option object sent to the &lt;code>_fetchRawTrack&lt;/code> method, augmented with track array buffer
 	 * @returns {promise} A Promise that is resolved when analysis is done, of will be rejected otherwise **/
 	_buildOfflineCtx(options) {
 		this._logEvent('log', 'Offline rendering of the track');
@@ -173,8 +223,8 @@ class BeatDetect {
    * @name _processRenderedBuffer
    * @private
    * @memberof BeatDetect
-   * @description <blockquote>This method will process the audio buffer to extract its peak and guess the track BPM and offset.</blockquote>
-   * @param {object} options - The option object sent to the <code>_buildOfflineCtx</code> method, augmented with track audio buffer
+   * @description &lt;blockquote>This method will process the audio buffer to extract its peak and guess the track BPM and offset.&lt;/blockquote>
+   * @param {object} options - The option object sent to the &lt;code>_buildOfflineCtx&lt;/code> method, augmented with track audio buffer
 	 * @returns {promise} A Promise that is resolved when analysis is done, of will be rejected otherwise **/
 	_processRenderedBuffer(options) {
 		this._logEvent('log', 'Collect beat info');
@@ -219,10 +269,10 @@ class BeatDetect {
 		const parts = data[0].length / partSize;
 		let peaks = [];
 		// Iterate over .5s parts we created
-		for (let i = 0; i < parts; ++i) {
+		for (let i = 0; i &lt; parts; ++i) {
 			let max = 0;
 			// Iterate each byte in the studied part
-			for (let j = i * partSize; j < (i + 1) * partSize; ++j) {
+			for (let j = i * partSize; j &lt; (i + 1) * partSize; ++j) {
 				const volume = Math.max(Math.abs(data[0][j]), Math.abs(data[1][j]));
 				if (!max || (volume > max.volume)) {
 					// Save peak at its most intense position
@@ -259,7 +309,7 @@ class BeatDetect {
 		const groups = [];
 		// Comparing each peak with the next one to compute an interval group
 		peaks.forEach((peak, index) => {
-			for (let i = 1; (index + i) < peaks.length && i < 10; ++i) {
+			for (let i = 1; (index + i) &lt; peaks.length &amp;&amp; i &lt; 10; ++i) {
 				const group = {
 					tempo: (60 * this._sampleRate) / (peaks[index + i].position - peak.position),
 					count: 1,
@@ -267,7 +317,7 @@ class BeatDetect {
 					peaks: []
 				};
 				// Trim to fit tempo range to lower bound
-				while (group.tempo <= this._bpmRange[0]) {
+				while (group.tempo &lt;= this._bpmRange[0]) {
 					group.tempo *= 2;
 				}
 				// Trim to fit tempo range to upper bound
@@ -316,9 +366,9 @@ class BeatDetect {
 		var parts = data.length / partSize;
 		var peaks = [];
 		// Create peak with little offset on the left to get the very start of the peak
-		for (let i = 0; i < parts; ++i) {
+		for (let i = 0; i &lt; parts; ++i) {
 			let max = 0;
-			for (let j = i * partSize; j < (i + 1) * partSize; ++j) {
+			for (let j = i * partSize; j &lt; (i + 1) * partSize; ++j) {
 				const volume = data[j];
 				if (!max || (volume > max.volume)) {
 					max = {
@@ -340,22 +390,22 @@ class BeatDetect {
 		let mean = 0;
 		let divider = 0;
 		// Find shortest offset
-		for (let i = 0; i < peaks.length; ++i) {
+		for (let i = 0; i &lt; peaks.length; ++i) {
 			const offset = this._getLowestTimeOffset(peaks[i].position, length, bpm);
-			if (offset - refOffset < 0.05 || refOffset - offset > -0.05) { // Only keep first times to compute mean
+			if (offset - refOffset &lt; 0.05 || refOffset - offset > -0.05) { // Only keep first times to compute mean
 				mean += offset;
 				++divider;
 			}
 		}
 		// Find first beat offset
 		let i = 0; // Try finding the first peak index that is louder than provided threshold (0.02)
-		while (unsortedPeaks[i].volume < 0.02) { // Threshold is also arbitrary...
+		while (unsortedPeaks[i].volume &lt; 0.02) { // Threshold is also arbitrary...
 			++i;
 		}
 		// Convert position into time
 		let firstBar = (unsortedPeaks[i].position / this._sampleRate);
 		// If matching first bar is before any possible time ellapsed, we set it at computed offset
-		if (firstBar > (mean / divider) && firstBar < (60 / bpm)) {
+		if (firstBar > (mean / divider) &amp;&amp; firstBar &lt; (60 / bpm)) {
 			firstBar = (mean / divider)
 		}
 		// Return both offset and first bar offset
@@ -379,8 +429,8 @@ class BeatDetect {
 			offset -= (bpmTime * this._timeSignature);
 		}
 
-		if (offset < 0) {
-			while (offset < 0) {
+		if (offset &lt; 0) {
+			while (offset &lt; 0) {
 				offset += bpmTime;
 			}
 		}
@@ -409,7 +459,7 @@ class BeatDetect {
    * @name _logEvent
    * @private
    * @memberof BeatDetect
-   * @description <blockquote>This method will display a given console output if the logging is allowed.</blockquote>
+   * @description &lt;blockquote>This method will display a given console output if the logging is allowed.&lt;/blockquote>
    * @param {string} level - The console method to call in info, log, warn, error, trace etc.
    * @param {string} string - The text to display in the console **/
 	_logEvent(level, string) {
@@ -423,7 +473,7 @@ class BeatDetect {
    * @name _floatRound
    * @private
    * @memberof BeatDetect
-   * @description <blockquote>This method will return a rounded floating value to a given precision.</blockquote>
+   * @description &lt;blockquote>This method will return a rounded floating value to a given precision.&lt;/blockquote>
    * @param {number} value - The value to round at a given floating point
    * @param {number} precision - The amount of numbers after the floating point
    * @returns {number} The rounded value with its given floating point **/
@@ -491,3 +541,33 @@ class BeatDetect {
 
 
 export default BeatDetect;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<footer>
+    <img class="logo" src="img/toast-ui.png" style="">
+    <div class="footer-text">BeatDetect.js</div>
+</footer>
+<script>prettyPrint();</script>
+<script src="scripts/jquery.min.js"></script>
+<script src="scripts/tui-doc.js"></script>
+<script src="scripts/linenumber.js"></script>
+
+    <script>
+        var id = '_sub'.replace(/"/g, '_');
+        var selectedApi = document.getElementById(id); // do not use jquery selector
+        var $selectedApi = $(selectedApi);
+
+        $selectedApi.removeClass('hidden');
+        $selectedApi.parent().find('.glyphicon').removeClass('glyphicon-plus').addClass('glyphicon-minus');
+        showLnbApi();
+    </script>
+
+</body>
+</html>
