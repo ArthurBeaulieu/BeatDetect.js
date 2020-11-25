@@ -65,8 +65,6 @@ If you clone this repository, you can `npm install` to install development depen
 - `npm run dev` to watch for any change in source code ;
 - `npm run web-server` to launch a local development server ;
 - `npm run doc` to generate documentation ;
-- `npm run test` to perform all tests at once ;
-- `npm run testdev` to keep browsers open to debug tests ;
 - `npm run beforecommit` to perform tests, generate doc and bundle the JavaScript.
 
 To avoid CORS when locally loading the example HTML file, run the web server. Please do not use it on a production environment. Unit tests are performed on both Firefox and Chrome ; ensure you have both installed before running tests, otherwise they might fail.
