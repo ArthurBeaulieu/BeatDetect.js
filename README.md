@@ -1,6 +1,6 @@
 # BeatDetect.js
 
-![](https://badgen.net/badge/version/0.1.1/blue)
+![](https://badgen.net/badge/version/1.0.0/blue)
 [![License](https://img.shields.io/github/license/ArthurBeaulieu/BeatDetect.js.svg)](https://github.com/ArthurBeaulieu/BeatDetect.js/blob/master/LICENSE.md)
 ![](https://badgen.net/badge/documentation/written/green)
 ![](https://badgen.net/badge/test/todo/red)
@@ -52,6 +52,18 @@ beatDetect.getBeatInfo({
 Since the processing is asynchronous, you can call it in loops, but beware that it implies a significant load on the CPU. Because the `getBeatInfo()` method returns a `Promise`, it might be a better idea to chain them!
 
 You can test those values in a mixing software, or in a [AudioVisualizer](https://github.com/ArthurBeaulieu/AudioVisualizer)'s timeline component, that draws a waveform into a canvas with beat bars that scrolls over playback, the same used in DJ softwares! Just instantiate it with the provided BPM and firstBar values to check their accuracy.
+
+This component also provides a method to manually determine a BPM using the mouse click :
+
+```javascript
+beatDetect.tapBpm({
+  element: document.getElementById('my-clickable-element'),
+  precision: 4, // Floating point for result
+  callback: bpm => {
+    // Do whatever you want with it
+  }
+});
+```
 
 This repository includes examples on how to use this component with hardcoded urls, or with tracks selected by the user (see [example.html](https://github.com/ArthurBeaulieu/BeatDetect.js/blob/main/example.html)).
 

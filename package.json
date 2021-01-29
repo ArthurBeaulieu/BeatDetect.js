@@ -1,6 +1,6 @@
 {
   "name": "beatdetect.js",
-  "version": "0.1.1",
+  "version": "1.0.0",
   "description": "Beat detector for audio files. KISS, light and library free. ",
   "keywords": [
     "javascript",
