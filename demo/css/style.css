@@ -102,4 +102,10 @@ p { transition: opacity .1s ease-out; }
   margin: 10px;
   padding: 10px 30px;
   user-select: none;
+  transition: background-color .1s, border .1s;
+}
+
+.determine-bpm:active {
+  background-color: rgba(0, 0, 0, .05);
+  border: dashed 1px red;
 }
