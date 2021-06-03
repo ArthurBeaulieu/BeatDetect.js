@@ -52,7 +52,7 @@ const bt = new BeatDetect({
 const demoButton = document.getElementById('demo-file');
 const outputText = document.getElementById('output-text');
 demoButton.addEventListener('click', () => {
-	outputText.innerHTML = 'Analysis in progress...'
+	outputText.innerHTML = 'Analysis in progress...';
 	bt.getBeatInfo({
 		url: `./demo/audio/Teminite - Don't Stop.mp3`,
 		name: `Don't Stop from Teminite` // Optional argument, only for logging
