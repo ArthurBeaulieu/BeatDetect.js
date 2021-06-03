@@ -11,6 +11,7 @@ class AnalysisModal {
 
     this._name = options.name;
     this._title = options.title;
+    this._loader = null;
     this._hotCue = options.hotCue;
 
     this._loadingOverlay = null;
@@ -65,6 +66,7 @@ class AnalysisModal {
 
   _fillAttributes() {
     this._dom.title = document.getElementById('modal-title');
+    this._dom.loader = document.getElementById('loading-spinner');
     this._dom.tracks = document.getElementById('track-container');
     this._dom.close = document.getElementById('close-button');
 
@@ -89,6 +91,7 @@ class AnalysisModal {
         console.log(this._data[i].name, info);
         if (counter === this._data.length) {
           this._dom.title.innerHTML = 'BeatDetect.js analysis done';
+          this._dom.loader.style.display = 'none';
         }
       }).catch(error => {
         console.error(error);
