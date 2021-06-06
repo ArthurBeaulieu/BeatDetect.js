@@ -16,7 +16,7 @@ With ~5Ko minified, `BeatDetect.js` is designed to be stable and remain as light
 
 This repository was made to store documentation, test bench and source code. If you want to include this component in your project, you either need the `src/BeatDetect.js` file if you have an assets bundler in your project, or use the `dist/BeatDetect.min.js` to use the minified component. This minified file is compiled in ES5 JavaScript for compatibility reasons. The unminified file is, in the contrary, coded in ES6 JavaScript.
 
-You must first instantiate a `BeatDetect.js` component, with several options as follows :
+You must first instantiate a `BeatDetect.js` component, with several options as follows (none of them are mandatory, here are presented the default values) :
 
 ```javascript
 import BeatDetect from './src/BeatDetect.js';

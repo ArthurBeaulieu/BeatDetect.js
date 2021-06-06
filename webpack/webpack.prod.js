@@ -5,5 +5,5 @@ const common = require('./webpack.common.js');
 
 module.exports = merge(common, {
   mode: 'production',
-  target: ['web', 'es5'], // Transpile module to es5 JavaScript
+  target: ['web', 'es5'] // Transpile module to es5 JavaScript
 });

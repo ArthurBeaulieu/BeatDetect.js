@@ -19,7 +19,7 @@ class BeatDetect {
    * @param {number} [options.highPassFreq=100] - The high pass filter cut frequency
    * @param {number[]} [options.bpmRange=[90, 180]] - The BPM range to output the result in
    * @param {number} [options.timeSignature=4] - The analysed audio time signature **/
-  constructor(options) {
+  constructor(options = {}) {
     // Attach Web Audio API components to the window
     window.AudioContext = window.AudioContext || window.webkitAudioContext;
     window.OfflineContext = window.OfflineAudioContext || window.webkitOfflineAudioContext;
@@ -129,6 +129,10 @@ class BeatDetect {
       request.open('GET', options.url, true);
       request.responseType = 'arraybuffer';
       request.onload = () => {
+        if (request.status == 404) {
+          reject('BeatDetect.ERROR : 404 File not found.');
+        }
+
         options.perf.m1 = performance.now();
         resolve(Object.assign(request, options));
       };
@@ -179,6 +183,8 @@ class BeatDetect {
           resolve(Object.assign(result, options));
         };
         offlineCtx.onerror = reject;
+      }, err => {
+        reject(`BeatDetect.ERROR : ${err}`);
       });
     });
   }
