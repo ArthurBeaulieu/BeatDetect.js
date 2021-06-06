@@ -122,22 +122,27 @@ class BeatDetect {
    * @param {object} options - The option object sent to the <code>getBeatInfo</code> method, augmented with performance marks
    * @returns {promise} A Promise that is resolved when analysis is done, of will be rejected otherwise **/
   _fetchRawTrack(options) {
-    // TODO use fetch api instead, ES rules
-    this._logEvent('log', `Fetch track ${options.name || ''}`);
     return new Promise((resolve, reject) => {
-      let request = new XMLHttpRequest();
-      request.open('GET', options.url, true);
-      request.responseType = 'arraybuffer';
-      request.onload = () => {
-        if (request.status == 404) {
-          reject('BeatDetect.ERROR : 404 File not found.');
-        }
+      if (!options) {
+        reject('BeatDetect.ERROR : No options object sent to _fetchRawTrack method.');
+      } else if (!options.url || !options.perf || typeof options.url !== 'string' || typeof options.perf !== 'object') {
+        reject('BeatDetect.ERROR : Options object sent to _fetchRawTrack method is invalid.');
+      } else {
+        this._logEvent('log', `Fetch track${options.name ? ' ' + options.name : ''}.`);
+        let request = new XMLHttpRequest();
+        request.open('GET', options.url, true);
+        request.responseType = 'arraybuffer';
+        request.onload = () => {
+          if (request.status == 404) {
+            reject('BeatDetect.ERROR : 404 File not found.');
+          }
 
-        options.perf.m1 = performance.now();
-        resolve(Object.assign(request, options));
-      };
-      request.onerror = reject;
-      request.send();
+          options.perf.m1 = performance.now();
+          resolve(Object.assign(request, options));
+        };
+        request.onerror = reject;
+        request.send();
+      }
     });
   }
 
@@ -150,42 +155,48 @@ class BeatDetect {
    * @param {object} options - The option object sent to the <code>_fetchRawTrack</code> method, augmented with track array buffer
    * @returns {promise} A Promise that is resolved when analysis is done, of will be rejected otherwise **/
   _buildOfflineCtx(options) {
-    this._logEvent('log', 'Offline rendering of the track');
     return new Promise((resolve, reject) => {
-      // Decode track audio with audio context to later feed the offline context with a buffer
-      const audioCtx = new AudioContext();
-      audioCtx.decodeAudioData(options.response, buffer => {
-        // Define offline context according to the buffer sample rate and duration
-        const offlineCtx = new window.OfflineContext(2, buffer.duration * this._sampleRate, this._sampleRate);
-        // Create buffer source from loaded track
-        const source = offlineCtx.createBufferSource();
-        source.buffer = buffer;
-        // Lowpass filter to ignore most frequencies except bass (goal is to retrieve kick impulsions)
-        const lowpass = offlineCtx.createBiquadFilter();
-        lowpass.type = 'lowpass';
-        lowpass.frequency.value = this._lowPassFreq;
-        lowpass.Q.value = 1;
-        // Apply a high pass filter to remove the bassline
-        const highpass = offlineCtx.createBiquadFilter();
-        highpass.type = 'highpass';
-        highpass.frequency.value = this._highPassFreq;
-        highpass.Q.value = 1;
-        // Chain offline nodes from source to destination with filters among
-        source.connect(lowpass);
-        lowpass.connect(highpass);
-        highpass.connect(offlineCtx.destination);
-        // Start the source and rendering
-        source.start(0);
-        offlineCtx.startRendering();
-        // Continnue analysis when buffer has been read
-        offlineCtx.oncomplete = result => {
-          options.perf.m2 = performance.now();
-          resolve(Object.assign(result, options));
-        };
-        offlineCtx.onerror = reject;
-      }, err => {
-        reject(`BeatDetect.ERROR : ${err}`);
-      });
+      if (!options) {
+        reject('BeatDetect.ERROR : No options object sent to _buildOfflineCtx method.');
+      } else if (!options.response || !options.perf || typeof options.response !== 'object' || typeof options.perf !== 'object') {
+        reject('BeatDetect.ERROR : Options object sent to _buildOfflineCtx method is invalid.');
+      } else {
+        this._logEvent('log', 'Offline rendering of the track.');
+        // Decode track audio with audio context to later feed the offline context with a buffer
+        const audioCtx = new AudioContext();
+        audioCtx.decodeAudioData(options.response, buffer => {
+          // Define offline context according to the buffer sample rate and duration
+          const offlineCtx = new window.OfflineContext(2, buffer.duration * this._sampleRate, this._sampleRate);
+          // Create buffer source from loaded track
+          const source = offlineCtx.createBufferSource();
+          source.buffer = buffer;
+          // Lowpass filter to ignore most frequencies except bass (goal is to retrieve kick impulsions)
+          const lowpass = offlineCtx.createBiquadFilter();
+          lowpass.type = 'lowpass';
+          lowpass.frequency.value = this._lowPassFreq;
+          lowpass.Q.value = 1;
+          // Apply a high pass filter to remove the bassline
+          const highpass = offlineCtx.createBiquadFilter();
+          highpass.type = 'highpass';
+          highpass.frequency.value = this._highPassFreq;
+          highpass.Q.value = 1;
+          // Chain offline nodes from source to destination with filters among
+          source.connect(lowpass);
+          lowpass.connect(highpass);
+          highpass.connect(offlineCtx.destination);
+          // Start the source and rendering
+          source.start(0);
+          offlineCtx.startRendering();
+          // Continnue analysis when buffer has been read
+          offlineCtx.oncomplete = result => {
+            options.perf.m2 = performance.now();
+            resolve(Object.assign(result, options));
+          };
+          offlineCtx.onerror = reject;
+        }, err => {
+          reject(`BeatDetect.ERROR : ${err}`);
+        });
+      }
     });
   }
 
@@ -198,30 +209,36 @@ class BeatDetect {
    * @param {object} options - The option object sent to the <code>_buildOfflineCtx</code> method, augmented with track audio buffer
    * @returns {promise} A Promise that is resolved when analysis is done, of will be rejected otherwise **/
   _processRenderedBuffer(options) {
-    this._logEvent('log', 'Collect beat info');
-    return new Promise(resolve => {
-      // Extract PCM data from offline rendered buffer
-      const dataL = options.renderedBuffer.getChannelData(0);
-      const dataR = options.renderedBuffer.getChannelData(1);
-      // Extract most intense peaks, and create intervals between them
-      const peaks = this._getPeaks([dataL, dataR]);
-      const groups = this._getIntervals(peaks);
-      // Sort found intervals by count to get the most accurate one in first position
-      var top = groups.sort((intA, intB) => {
-        return intB.count - intA.count;
-      }).splice(0, 5); // Only keep the 5 best matches
-      // Build offset and first bar
-      const offsets = this._getOffsets(dataL, top[0].tempo);
-      options.perf.m3 = performance.now();
-      this._logEvent('log', 'Analysis done');
-      // Sent BPM info to the caller
-      resolve(Object.assign({
-        bpm: top[0].tempo,
-        offset: this._floatRound(offsets.offset, this._float),
-        firstBar: this._floatRound(offsets.firstBar, this._float)
-      }, this._perf ? { // Assign perf key to return object if user requested it
-        perf: this._getPerfDuration(options.perf)
-      } : null));
+    return new Promise((resolve, reject) => {
+      if (!options) {
+        reject('BeatDetect.ERROR : No options object sent to _processRenderedBuffer method.');
+      } else if (!options.renderedBuffer || !options.perf || typeof options.renderedBuffer !== 'object' || typeof options.perf !== 'object') {
+        reject('BeatDetect.ERROR : Options object sent to _processRenderedBuffer method is invalid.');
+      } else {
+        this._logEvent('log', 'Collect beat info.');
+        // Extract PCM data from offline rendered buffer
+        const dataL = options.renderedBuffer.getChannelData(0);
+        const dataR = options.renderedBuffer.getChannelData(1);
+        // Extract most intense peaks, and create intervals between them
+        const peaks = this._getPeaks([dataL, dataR]);
+        const groups = this._getIntervals(peaks);
+        // Sort found intervals by count to get the most accurate one in first position
+        var top = groups.sort((intA, intB) => {
+          return intB.count - intA.count;
+        }).splice(0, 5); // Only keep the 5 best matches
+        // Build offset and first bar
+        const offsets = this._getOffsets(dataL, top[0].tempo);
+        options.perf.m3 = performance.now();
+        this._logEvent('log', 'Analysis done.');
+        // Sent BPM info to the caller
+        resolve(Object.assign({
+          bpm: top[0].tempo,
+          offset: this._floatRound(offsets.offset, this._float),
+          firstBar: this._floatRound(offsets.firstBar, this._float)
+        }, this._perf ? { // Assign perf key to return object if user requested it
+          perf: this._getPerfDuration(options.perf)
+        } : null));
+      }
     });
   }
 

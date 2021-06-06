@@ -46,6 +46,164 @@ describe('BeatDetect unit test,', () => {
       bt = new BeatDetect();
     });
   });
+
+  describe('Private methods', () => {
+    it('_fetchRawTrack no args', done => {
+      const bt = new BeatDetect();
+      bt._fetchRawTrack().catch(err => {
+        expect(err).toEqual(`BeatDetect.ERROR : No options object sent to _fetchRawTrack method.`);
+        done();
+      });
+    });
+
+    it('_fetchRawTrack empty args', done => {
+      const bt = new BeatDetect();
+      bt._fetchRawTrack({}).catch(err => {
+        expect(err).toEqual(`BeatDetect.ERROR : Options object sent to _fetchRawTrack method is invalid.`);
+        done();
+      });
+    });
+
+    it('_fetchRawTrack wrong args', done => {
+      const bt = new BeatDetect();
+      bt._fetchRawTrack({
+        url: 42
+      }).catch(err => {
+        expect(err).toEqual(`BeatDetect.ERROR : Options object sent to _fetchRawTrack method is invalid.`);
+        bt._fetchRawTrack({
+          perf: {}
+        }).catch(err => {
+          expect(err).toEqual(`BeatDetect.ERROR : Options object sent to _fetchRawTrack method is invalid.`);
+          done();
+        });
+      });
+    });
+
+    it('_fetchRawTrack unexisting url', done => {
+      const bt = new BeatDetect();
+      bt._fetchRawTrack({
+        url: `/base/demo/audio/Unexisting track.mp3`,
+        perf: { m1: null }
+      }).catch(err => {
+        expect(err).toEqual(`BeatDetect.ERROR : 404 File not found.`);
+        done();
+      });
+    });
+
+    it('_fetchRawTrack logging', done => {
+      let calls = 0;
+      spyOn(console, 'log').and.callFake(args => {
+        if (calls === 0) {
+          expect(args).toEqual(`BeatDetect : Fetch track.`);
+          ++calls;
+        } else {
+          expect(args).toEqual(`BeatDetect : Fetch track Testing Music.`);
+        }
+      });
+
+      const bt = new BeatDetect({ log: true });
+      bt._fetchRawTrack({
+        url: `/base/demo/audio/Teminite - Don't Stop.mp3`,
+        perf: { m1: null }
+      }).then(() => {
+        bt._fetchRawTrack({
+          url: `/base/demo/audio/Teminite - Don't Stop.mp3`,
+          name: 'Testing Music',
+          perf: { m1: null }
+        }).then(opts => {
+          expect(opts.perf.m1).not.toEqual('');
+          expect(typeof opts.perf.m1).toEqual('number');
+          done();
+        });
+      });
+    });
+
+    it('_buildOfflineCtx no args', done => {
+      const bt = new BeatDetect();
+      bt._buildOfflineCtx().catch(err => {
+        expect(err).toEqual(`BeatDetect.ERROR : No options object sent to _buildOfflineCtx method.`);
+        done();
+      });
+    });
+
+    it('_buildOfflineCtx empty args', done => {
+      const bt = new BeatDetect();
+      bt._buildOfflineCtx({}).catch(err => {
+        expect(err).toEqual(`BeatDetect.ERROR : Options object sent to _buildOfflineCtx method is invalid.`);
+        done();
+      });
+    });
+
+    it('_buildOfflineCtx wrong args', done => {
+      const bt = new BeatDetect();
+      bt._buildOfflineCtx({
+        response: 42
+      }).catch(err => {
+        expect(err).toEqual(`BeatDetect.ERROR : Options object sent to _buildOfflineCtx method is invalid.`);
+        bt._buildOfflineCtx({
+          perf: {}
+        }).catch(err => {
+          expect(err).toEqual(`BeatDetect.ERROR : Options object sent to _buildOfflineCtx method is invalid.`);
+          done();
+        });
+      });
+    });
+
+    it('_buildOfflineCtx invalid audio data', done => {
+      const bt = new BeatDetect();
+      bt._buildOfflineCtx({
+        response: new ArrayBuffer(),
+        perf: { m2: null }
+      }).catch(err => {
+        expect(err).toEqual(`BeatDetect.ERROR : EncodingError: The buffer passed to decodeAudioData contains an unknown content type.`);
+        done();
+      });
+    });
+
+    it('_buildOfflineCtx logging', done => {
+      spyOn(console, 'log').and.callFake(args => {
+        expect(args).toEqual(`BeatDetect : Offline rendering of the track.`);
+        done();
+      });
+
+      const bt = new BeatDetect({ log: true });
+      bt._buildOfflineCtx({
+        response: new ArrayBuffer(),
+        perf: { m2: null }
+      });
+    });
+
+    it('_processRenderedBuffer no args', done => {
+      const bt = new BeatDetect();
+      bt._processRenderedBuffer().catch(err => {
+        expect(err).toEqual(`BeatDetect.ERROR : No options object sent to _processRenderedBuffer method.`);
+        done();
+      });
+    });
+
+    it('_processRenderedBuffer empty args', done => {
+      const bt = new BeatDetect();
+      bt._processRenderedBuffer({}).catch(err => {
+        expect(err).toEqual(`BeatDetect.ERROR : Options object sent to _processRenderedBuffer method is invalid.`);
+        done();
+      });
+    });
+
+    it('_processRenderedBuffer wrong args', done => {
+      const bt = new BeatDetect();
+      bt._processRenderedBuffer({
+        renderedBuffer: 42
+      }).catch(err => {
+        expect(err).toEqual(`BeatDetect.ERROR : Options object sent to _processRenderedBuffer method is invalid.`);
+        bt._processRenderedBuffer({
+          perf: {}
+        }).catch(err => {
+          expect(err).toEqual(`BeatDetect.ERROR : Options object sent to _processRenderedBuffer method is invalid.`);
+          done();
+        });
+      });
+    });
+  });
 });
 
 describe('BeatDetect integration test,', () => {
@@ -56,7 +214,7 @@ describe('BeatDetect integration test,', () => {
       spyOn(bt, '_fetchRawTrack').and.callThrough();
       spyOn(bt, '_buildOfflineCtx').and.callThrough();
       spyOn(bt, '_processRenderedBuffer').and.callThrough();
-      // Perfor beat detection on sample track
+      // Perform beat detection on sample track
       bt.getBeatInfo({
     		url: `/base/demo/audio/Teminite - Don't Stop.mp3`
     	}).then(info => {
@@ -85,7 +243,7 @@ describe('BeatDetect integration test,', () => {
       // Emulate a fake response from XMLHTTP to make decode fail
       spyOn(bt, '_fetchRawTrack').and.callFake(() => {
         return new Promise(resolve => {
-          resolve({ response: new ArrayBuffer() });
+          resolve({ response: new ArrayBuffer(), perf: {} });
         });
       });
       // Perfor beat detection on sample track

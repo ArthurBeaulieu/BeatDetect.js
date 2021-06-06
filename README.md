@@ -3,7 +3,7 @@
 ![](https://badgen.net/badge/version/1.0.0/blue)
 [![License](https://img.shields.io/github/license/ArthurBeaulieu/BeatDetect.js.svg)](https://github.com/ArthurBeaulieu/BeatDetect.js/blob/master/LICENSE.md)
 ![](https://badgen.net/badge/documentation/written/green)
-![](https://badgen.net/badge/test/todo/red)
+![](https://badgen.net/badge/test/WIP/orange)
 ![](https://badgen.net/badge/dependencies/none/green)
 
 `BeatDetect.js` is a JavaScript ES6 component that calculates the BPM of a track, with its time offset and the time offset to its first true beat. There are several options to fine tune the process, but `BeatDetect.js` works best with modern music (even better on EDM music), based on 4/4 time signature.

@@ -18,17 +18,9 @@ module.exports = config => {
         nocache: false
       }
     ],
-    reporters: ['progress', 'coverage'],
+    reporters: ['progress'],
     preprocessors: {
-      'test/testContext.js': ['webpack', 'coverage']
-    },
-    coverageReporter: {
-      type : 'lcov',
-      dir : 'test/coverage/',
-      // file : 'coverage.json',
-      subdir: browser => {
-        return browser.toLowerCase().split(/[ /-]/)[0];
-      }
+      'test/testContext.js': ['webpack']
     },
     babelPreprocessor: {
       options: {

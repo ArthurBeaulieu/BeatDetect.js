@@ -61,14 +61,14 @@
 <p><img src="https://badgen.net/badge/version/1.0.0/blue" alt="">
 <a href="https://github.com/ArthurBeaulieu/BeatDetect.js/blob/master/LICENSE.md"><img src="https://img.shields.io/github/license/ArthurBeaulieu/BeatDetect.js.svg" alt="License"></a>
 <img src="https://badgen.net/badge/documentation/written/green" alt="">
-<img src="https://badgen.net/badge/test/todo/red" alt="">
+<img src="https://badgen.net/badge/test/WIP/orange" alt="">
 <img src="https://badgen.net/badge/dependencies/none/green" alt=""></p>
 <p><code>BeatDetect.js</code> is a JavaScript ES6 component that calculates the BPM of a track, with its time offset and the time offset to its first true beat. There are several options to fine tune the process, but <code>BeatDetect.js</code> works best with modern music (even better on EDM music), based on 4/4 time signature.</p>
 <p>With ~5Ko minified, <code>BeatDetect.js</code> is designed to be stable and remain as light as possible. It is meant to be used client side ; unfortunately, the web audio API is not supported in nodejs.</p>
 <p><a href="https://arthurbeaulieu.github.io/BeatDetect.js/example.html">Try me here!</a></p>
 <h1>Get Started</h1>
 <p>This repository was made to store documentation, test bench and source code. If you want to include this component in your project, you either need the <code>src/BeatDetect.js</code> file if you have an assets bundler in your project, or use the <code>dist/BeatDetect.min.js</code> to use the minified component. This minified file is compiled in ES5 JavaScript for compatibility reasons. The unminified file is, in the contrary, coded in ES6 JavaScript.</p>
-<p>You must first instantiate a <code>BeatDetect.js</code> component, with several options as follows :</p>
+<p>You must first instantiate a <code>BeatDetect.js</code> component, with several options as follows (none of them are mandatory, here are presented the default values) :</p>
 <pre class="prettyprint source lang-javascript"><code>import BeatDetect from './src/BeatDetect.js';
 // Component presented with default values
 const beatDetect = new BeatDetect({
