@@ -3,7 +3,7 @@
 ![](https://badgen.net/badge/version/1.0.0/blue)
 [![License](https://img.shields.io/github/license/ArthurBeaulieu/BeatDetect.js.svg)](https://github.com/ArthurBeaulieu/BeatDetect.js/blob/master/LICENSE.md)
 ![](https://badgen.net/badge/documentation/written/green)
-![](https://badgen.net/badge/test/WIP/orange)
+![](https://badgen.net/badge/test/basic/green)
 ![](https://badgen.net/badge/dependencies/none/green)
 
 `BeatDetect.js` is a JavaScript ES6 component that calculates the BPM of a track, with its time offset and the time offset to its first true beat. There are several options to fine tune the process, but `BeatDetect.js` works best with modern music (even better on EDM music), based on 4/4 time signature.
@@ -29,7 +29,7 @@ const beatDetect = new BeatDetect({
   float: 4, // The floating precision in [1, Infinity]
   lowPassFreq: 150, // Low pass filter cut frequency
   highPassFreq: 100, // High pass filter cut frequency
-  bpmRange: [90, 180], // The BPM range to output  
+  bpmRange: [90, 180], // The BPM range to output
   timeSignature: 4 // The number of beat in a measure
 });
 ```
@@ -75,8 +75,9 @@ If you clone this repository, you can `npm install` to install development depen
 
 - `npm run build` to generate the minified file ;
 - `npm run dev` to watch for any change in source code ;
-- `npm run web-server` to launch a local development server ;
+- `npm run server` to launch a local development server ;
 - `npm run doc` to generate documentation ;
+- `npm run test` to run unit tests ;
 - `npm run beforecommit` to perform tests, generate doc and bundle the JavaScript.
 
 To avoid CORS when locally loading the example HTML file, run the web server. Please do not use it on a production environment. Unit tests are performed on both Firefox and Chrome ; ensure you have both installed before running tests, otherwise they might fail.

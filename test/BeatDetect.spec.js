@@ -216,26 +216,26 @@ describe('BeatDetect integration test,', () => {
       spyOn(bt, '_processRenderedBuffer').and.callThrough();
       // Perform beat detection on sample track
       bt.getBeatInfo({
-    		url: `/base/demo/audio/Teminite - Don't Stop.mp3`
-    	}).then(info => {
+        url: `/base/demo/audio/Teminite - Don't Stop.mp3`
+      }).then(info => {
         expect(JSON.stringify(info)).toEqual(`{"bpm":140,"offset":0.16157315,"firstBar":1.88417234}`);
         // Check that internal methods where properly called
         expect(bt._fetchRawTrack).toHaveBeenCalled();
         expect(bt._buildOfflineCtx).toHaveBeenCalled();
         expect(bt._processRenderedBuffer).toHaveBeenCalled();
         done();
-    	});
+      });
     });
 
     it('Loading failure', done => {
       const bt = new BeatDetect();
       // Perfor beat detection on sample track
       bt.getBeatInfo({
-    		url: `/base/demo/audio/Unexisting track.mp3`
-    	}).catch(err => {
+        url: `/base/demo/audio/Unexisting track.mp3`
+      }).catch(err => {
         expect(err).toEqual(`BeatDetect.ERROR : 404 File not found.`);
         done();
-    	});
+      });
     });
 
     it('Decoding failure', done => {
@@ -248,11 +248,11 @@ describe('BeatDetect integration test,', () => {
       });
       // Perfor beat detection on sample track
       bt.getBeatInfo({
-    		url: `/base/demo/audio/Teminite - Don't Stop.mp3`
-    	}).catch(err => {
+        url: `/base/demo/audio/Teminite - Don't Stop.mp3`
+      }).catch(err => {
         expect(err).toEqual(`BeatDetect.ERROR : EncodingError: The buffer passed to decodeAudioData contains an unknown content type.`);
         done();
-    	});
+      });
     });
   });
 });

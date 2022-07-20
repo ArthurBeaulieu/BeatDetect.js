@@ -34,7 +34,7 @@ class BeatDetect {
     /** @private
      * @member {boolean} - Log debug information in the console when set to true **/
     this._log = options.log || false;
-		/*  ----  Automation beat deterination internals  ----  */
+    /*  ----  Automation beat deterination internals  ----  */
     /** @private
      * @member {boolean} - Log elapsed times during the analysis in the console when set to true **/
     this._perf = options.perf || false;
@@ -59,20 +59,20 @@ class BeatDetect {
     /** @private
      * @member {number} - The studied track time signature **/
     this._timeSignature = options.timeSignature || 4;
-		/*  ------  Manual beat deterination internals  ------  */
-		/** @private
-		 * @member {number} - The amount of time a click is trigerred to compute BPM **/
-		this.count = 0;
-		/** @private
-		 * @member {object} - Contains timestamp used to determine manual BPM **/
-		this._ts = {
-			current: 0,
-			previous: 0,
-			first: 0
-		};
-		/** @private
-		 * @member {number} - Reset tap timeout ID **/
-		this._tapResetId = -1;
+    /*  ------  Manual beat deterination internals  ------  */
+    /** @private
+     * @member {number} - The amount of time a click is trigerred to compute BPM **/
+    this.count = 0;
+    /** @private
+     * @member {object} - Contains timestamp used to determine manual BPM **/
+    this._ts = {
+      current: 0,
+      previous: 0,
+      first: 0
+    };
+    /** @private
+     * @member {number} - Reset tap timeout ID **/
+    this._tapResetId = -1;
   }
 
 
@@ -248,7 +248,7 @@ class BeatDetect {
   /*  --------------------------------------------------------------------------------------------------------------- */
 
 
-	/** @method
+  /** @method
    * @name _getPeaks
    * @private
    * @memberof BeatDetect
@@ -294,12 +294,12 @@ class BeatDetect {
   }
 
 
-	/** @method
+  /** @method
    * @name _getIntervals
    * @private
    * @memberof BeatDetect
    * @description <blockquote>This method will then compute time interval between peak, in order to
-	 * spot the interval that is the most represented. See implementation for further details.</blockquote>
+   * spot the interval that is the most represented. See implementation for further details.</blockquote>
    * @param {object[]} peaks - The peaks for a given track. Returned from _getPeaks method
    * @returns {array} An array of time intervals **/
   _getIntervals(peaks) {
@@ -355,12 +355,12 @@ class BeatDetect {
   }
 
 
-	/** @method
+  /** @method
    * @name _getOffsets
    * @private
    * @memberof BeatDetect
    * @description <blockquote>This method will finally compute time offset from song start to first bar, or first
-	 * significant beat. See implementation for further details.</blockquote>
+   * significant beat. See implementation for further details.</blockquote>
    * @param {object[]} data - Array containg L audio data (no important to stereo this)
    * @param {number} bpm - The most credible BPM, computed after the most frequent time interval
    * @returns {object} The beat offset and the offset to the first bar **/
@@ -428,13 +428,13 @@ class BeatDetect {
   }
 
 
-	/** @method
+  /** @method
    * @name _getLowestTimeOffset
    * @private
    * @memberof BeatDetect
    * @description <blockquote>This method will search for the smallest time in track for a beat ; using
-	 * the estimated bpm, we rewind from time signature to get the closest from the track beginning.
-	 * See implementation for further details.</blockquote>
+   * the estimated bpm, we rewind from time signature to get the closest from the track beginning.
+   * See implementation for further details.</blockquote>
    * @param {object[]} position - The beat position for beat to lower
    * @param {number} bpm - The most credible BPM, computed after the most frequent time interval
    * @returns {object} The beat offset and the offset to the first bar **/
@@ -461,7 +461,7 @@ class BeatDetect {
   }
 
 
-	/** @method
+  /** @method
    * @name _getPerfDuration
    * @private
    * @memberof BeatDetect
@@ -479,27 +479,27 @@ class BeatDetect {
   }
 
 
-	/*  --------------------------------------------------------------------------------------------------------------- */
+  /*  --------------------------------------------------------------------------------------------------------------- */
   /*  -------------------------------------------  BPM TAP METHODS  ------------------------------------------------  */
   /*  --------------------------------------------------------------------------------------------------------------- */
 
 
-	/** @method
+  /** @method
    * @name tapBpm
    * @public
    * @memberof BeatDetect
    * @description <blockquote>Providing a DOM element and a callback to manually determine a bpm, using a click.
-	 * After 5 seconds, the result will be reset.</blockquote>
+   * After 5 seconds, the result will be reset.</blockquote>
    * @param {objects} options - Manual bpm determinitation options
    * @param {object} options.element - The DOM element to listen to
    * @param {number} options.precision - The floating point for result
    * @param {function} options.callback - The callback function to call each click **/
-	tapBpm(options) {
-		options.element.addEventListener('click', this._tapBpm.bind(this, options), false);
-	}
+  tapBpm(options) {
+    options.element.addEventListener('click', this._tapBpm.bind(this, options), false);
+  }
 
 
-	/** @method
+  /** @method
    * @name _tapBpm
    * @private
    * @memberof BeatDetect
@@ -507,35 +507,35 @@ class BeatDetect {
    * @param {object} options - The internal options object
    * @param {number} precision - The floating point for result
    * @param {function} callback - The callback function to call each click **/
-	_tapBpm(options) {
-		window.clearTimeout(this._tapResetId);
+  _tapBpm(options) {
+    window.clearTimeout(this._tapResetId);
 
-		this._ts.current = Date.now();
-		// Store the first timestamp of the tap sequence on first click
-		if (this._ts.first === 0) {
-			this._ts.first = this._ts.current;
-		}
+    this._ts.current = Date.now();
+    // Store the first timestamp of the tap sequence on first click
+    if (this._ts.first === 0) {
+      this._ts.first = this._ts.current;
+    }
 
-		if (this._ts.previous !== 0) {
-			let bpm = 60000 * this.count / (this._ts.current - this._ts.first);
-			if (options.precision) {
-				bpm = this._floatRound(bpm, options.precision);
-			}
-			options.callback(bpm);
-		}
+    if (this._ts.previous !== 0) {
+      let bpm = 60000 * this.count / (this._ts.current - this._ts.first);
+      if (options.precision) {
+        bpm = this._floatRound(bpm, options.precision);
+      }
+      options.callback(bpm);
+    }
 
-		// Store the old timestamp
-		this._ts.previous = this._ts.current;
-		++this.count;
+    // Store the old timestamp
+    this._ts.previous = this._ts.current;
+    ++this.count;
 
-		this._tapResetId = window.setTimeout(() => {
-			this.count = 0;
-			this._ts.current = 0;
-			this._ts.previous = 0;
-			this._ts.first = 0;
-			options.callback('--');
-		}, 5000);
-	}
+    this._tapResetId = window.setTimeout(() => {
+      this.count = 0;
+      this._ts.current = 0;
+      this._ts.previous = 0;
+      this._ts.first = 0;
+      options.callback('--');
+    }, 5000);
+  }
 
 
   /*  --------------------------------------------------------------------------------------------------------------- */

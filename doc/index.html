@@ -61,7 +61,7 @@
 <p><img src="https://badgen.net/badge/version/1.0.0/blue" alt="">
 <a href="https://github.com/ArthurBeaulieu/BeatDetect.js/blob/master/LICENSE.md"><img src="https://img.shields.io/github/license/ArthurBeaulieu/BeatDetect.js.svg" alt="License"></a>
 <img src="https://badgen.net/badge/documentation/written/green" alt="">
-<img src="https://badgen.net/badge/test/WIP/orange" alt="">
+<img src="https://badgen.net/badge/test/basic/green" alt="">
 <img src="https://badgen.net/badge/dependencies/none/green" alt=""></p>
 <p><code>BeatDetect.js</code> is a JavaScript ES6 component that calculates the BPM of a track, with its time offset and the time offset to its first true beat. There are several options to fine tune the process, but <code>BeatDetect.js</code> works best with modern music (even better on EDM music), based on 4/4 time signature.</p>
 <p>With ~5Ko minified, <code>BeatDetect.js</code> is designed to be stable and remain as light as possible. It is meant to be used client side ; unfortunately, the web audio API is not supported in nodejs.</p>
@@ -79,7 +79,7 @@ const beatDetect = new BeatDetect({
   float: 4, // The floating precision in [1, Infinity]
   lowPassFreq: 150, // Low pass filter cut frequency
   highPassFreq: 100, // High pass filter cut frequency
-  bpmRange: [90, 180], // The BPM range to output  
+  bpmRange: [90, 180], // The BPM range to output
   timeSignature: 4 // The number of beat in a measure
 });
 </code></pre>
@@ -113,8 +113,9 @@ const beatDetect = new BeatDetect({
 <ul>
 <li><code>npm run build</code> to generate the minified file ;</li>
 <li><code>npm run dev</code> to watch for any change in source code ;</li>
-<li><code>npm run web-server</code> to launch a local development server ;</li>
+<li><code>npm run server</code> to launch a local development server ;</li>
 <li><code>npm run doc</code> to generate documentation ;</li>
+<li><code>npm run test</code> to run unit tests ;</li>
 <li><code>npm run beforecommit</code> to perform tests, generate doc and bundle the JavaScript.</li>
 </ul>
 <p>To avoid CORS when locally loading the example HTML file, run the web server. Please do not use it on a production environment. Unit tests are performed on both Firefox and Chrome ; ensure you have both installed before running tests, otherwise they might fail.</p>

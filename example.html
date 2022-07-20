@@ -2,84 +2,85 @@
 <html>
 <head>
 <meta charset="utf-8">
-	<meta content="ie=edge" http-equiv="x-ua-compatible">
-	<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
-	<meta content="initial-scale=1" name="viewport">
-	<meta name="description" content="Beat detector for audio files. KISS, light and library free. ">
-	<title>BeatDetect.js 1.0.0 - Demo</title>
-	<link rel="stylesheet" href="./demo/css/style.css">
-	<link rel="icon" type="image/png" href="https://raw.githubusercontent.com/ArthurBeaulieu/ArthurBeaulieu/master/assets/img/ab-logo.png"/>
+  <meta content="ie=edge" http-equiv="x-ua-compatible">
+  <meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+  <meta content="initial-scale=1" name="viewport">
+  <meta name="description" content="Beat detector for audio files. KISS, light and library free. ">
+  <title>BeatDetect.js 1.0.0 - Demo</title>
+  <link rel="stylesheet" href="./demo/css/style.css">
+  <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/ArthurBeaulieu/ArthurBeaulieu/master/assets/img/ab-logo.png"/>
 </head>
 <body>
-	<a href="https://github.com/ArthurBeaulieu/BeatDetect.js" target="_blank" style="position: absolute; right: 0; top: 0;"><img width="149" height="149" src="https://github.blog/wp-content/uploads/2008/12/forkme_right_darkblue_121621.png?resize=149%2C149" alt="Fork me on GitHub"></a>
-	<h1>BeatDetect.js – Version 1.0.0</h1>
-	<hr>
-	<h3>Analyze demo file (Teminite – Don't Stop)</h3>
-	<button id="demo-file">Start Analysis</button>
-	<p id="output-text">Result will be displayed here...</p>
-	<h3>Analyse local tracks</h3>
-	<label for="file-input" class="file-input">Select tracks</label>
-	<input id="file-input" type="file" multiple>
-	<p id="output-text">Select one or several audio files to process...</p>
-	<hr>
-	<div id="determine-bpm" class="determine-bpm">
-		<p>Click here to manually determine BPM</p>
-		<p id="bpm-feedback">-- BPM</p>
-	</div>
-	<hr>
-	<p>
-		<a href="https://github.com/ArthurBeaulieu/BeatDetect.js/releases" title="Releases" target="_blank" rel="noreferrer noopener"><img src="https://badgen.net/badge/version/1.0.0/blue" alt="version-badge"></a>
-		<a href="https://github.com/ArthurBeaulieu/BeatDetect.js/blob/master/LICENSE" title="License" target="_blank" rel="noreferrer noopener"><img src="https://img.shields.io/github/license/ArthurBeaulieu/BeatDetect.js.svg" alt="license-badge"></a>
-		<a href="doc/index.html" title="Documentation" target="_blank" rel="noreferrer noopener"><img src="https://badgen.net/badge/documentation/written/green" alt="documentation-badge"></a>
-		<img src="https://badgen.net/badge/dependencies/none/green" alt="dependencies-badge" title="Check package.json file">
-	</p>
-	<p style="font-size: .9rem; font-style: italic; margin: 0;">Arthur Beaulieu – 2020/2021</p>
-	<script type="text/javascript" src="./dist/BeatDetect.bundle.js"></script>
-	<script type="module">
+  <a href="https://github.com/ArthurBeaulieu/BeatDetect.js" target="_blank" style="position: absolute; right: 0; top: 0;"><img width="149" height="149" src="https://github.blog/wp-content/uploads/2008/12/forkme_right_darkblue_121621.png?resize=149%2C149" alt="Fork me on GitHub"></a>
+  <h1>BeatDetect.js – Version 1.0.0</h1>
+  <hr>
+  <h3>Analyze demo file (Teminite – Don't Stop)</h3>
+  <button id="demo-file">Start Analysis</button>
+  <p id="output-text">Result will be displayed here...</p>
+  <h3>Analyse local tracks</h3>
+  <label for="file-input" class="file-input">Select tracks</label>
+  <input id="file-input" type="file" multiple>
+  <p id="output-text">Select one or several audio files to process...</p>
+  <hr>
+  <div id="determine-bpm" class="determine-bpm">
+    <p>Click here to manually determine BPM</p>
+    <p id="bpm-feedback">-- BPM</p>
+  </div>
+  <hr>
+  <p>
+    <a href="https://github.com/ArthurBeaulieu/BeatDetect.js/releases" title="Releases" target="_blank" rel="noreferrer noopener"><img src="https://badgen.net/badge/version/1.0.0/blue" alt="version-badge"></a>
+    <a href="https://github.com/ArthurBeaulieu/BeatDetect.js/blob/master/LICENSE" title="License" target="_blank" rel="noreferrer noopener"><img src="https://img.shields.io/github/license/ArthurBeaulieu/BeatDetect.js.svg" alt="license-badge"></a>
+    <a href="doc/index.html" title="Documentation" target="_blank" rel="noreferrer noopener"><img src="https://badgen.net/badge/documentation/written/green" alt="documentation-badge"></a>
+    <img src="https://badgen.net/badge/test/basic/green" alt="test-badge" title="Check package.json file">
+    <img src="https://badgen.net/badge/dependencies/none/green" alt="dependencies-badge" title="Check package.json file">
+  </p>
+  <p style="font-size: .9rem; font-style: italic; margin: 0;">Arthur Beaulieu – 2020/2022</p>
+  <script type="text/javascript" src="./dist/BeatDetect.bundle.js"></script>
+  <script type="module">
 import AnalysisModal from './demo/js/AnalysisModal.js';
 // Instanciation of BeatDetect with all its provided options
 const bt = new BeatDetect({
-	sampleRate: 44100,
-	log: false, // Debug BeatDetect execution with logs
-	perf: false, // Attach elapsed time to result object
-	round: false, // To have an integer result for the BPM
-	float: 4, // The floating precision in [1, Infinity]
-	lowPassFreq: 150, // Low pass filter cut frequency
-	highPassFreq: 100, // High pass filter cut frequency
-	bpmRange: [90, 180], // The BPM range to output
-	timeSignature: 4 // The number of beat in a measure
+  sampleRate: 44100,
+  log: false, // Debug BeatDetect execution with logs
+  perf: false, // Attach elapsed time to result object
+  round: false, // To have an integer result for the BPM
+  float: 4, // The floating precision in [1, Infinity]
+  lowPassFreq: 150, // Low pass filter cut frequency
+  highPassFreq: 100, // High pass filter cut frequency
+  bpmRange: [90, 180], // The BPM range to output
+  timeSignature: 4 // The number of beat in a measure
 });
 // Beat detection using demo file
 const demoButton = document.getElementById('demo-file');
 const outputText = document.getElementById('output-text');
 demoButton.addEventListener('click', () => {
-	outputText.innerHTML = 'Analysis in progress...';
-	bt.getBeatInfo({
-		url: `./demo/audio/Teminite - Don't Stop.mp3`,
-		name: `Don't Stop from Teminite` // Optional argument, only for logging
-	}).then(info => {
-		outputText.innerHTML = `Result : <b>${info.bpm}</b> BPM<br><i>Offset : <b>${info.offset}</b> s – First Bar : <b>${info.firstBar}</b> s</i>`;
-	}).catch(error => {
-		console.error(error);
-	});
+  outputText.innerHTML = 'Analysis in progress...';
+  bt.getBeatInfo({
+    url: `./demo/audio/Teminite - Don't Stop.mp3`,
+    name: `Don't Stop from Teminite` // Optional argument, only for logging
+  }).then(info => {
+    outputText.innerHTML = `Result : <b>${info.bpm}</b> BPM<br><i>Offset : <b>${info.offset}</b> s – First Bar : <b>${info.firstBar}</b> s</i>`;
+  }).catch(error => {
+    console.error(error);
+  });
 });
 // User local files
 const fileInput = document.getElementById('file-input');
 fileInput.addEventListener('change', () => {
-	const modal = new AnalysisModal({
-		url: './demo/html/analysisModal.html',
-		data: fileInput.files,
-		bt: bt
-	});
+  const modal = new AnalysisModal({
+    url: './demo/html/analysisModal.html',
+    data: fileInput.files,
+    bt: bt
+  });
 });
 // Manual BPM determination
 bt.tapBpm({
-	element: document.getElementById('determine-bpm'),
-	precision: 4,
-	callback: value => {
-		document.getElementById('bpm-feedback').innerHTML = `${value} BPM`;
-	}
+  element: document.getElementById('determine-bpm'),
+  precision: 4,
+  callback: value => {
+    document.getElementById('bpm-feedback').innerHTML = `${value} BPM`;
+  }
 });
-	</script>
+  </script>
 </body>
 </html>

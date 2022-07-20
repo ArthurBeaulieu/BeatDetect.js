@@ -1,5 +1,3 @@
-'use strict';
-
 const JSLoader = {
   test: /\.js$/i,
   exclude: /node_modules/,
